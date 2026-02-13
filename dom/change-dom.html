@@ -1,0 +1,85 @@
+<p> The <img src ="img / cat . png " alt ="Cat"> in the
+<img src =" img / hat . png " alt ="Hat">. </p>
+<p><button onclick  =" replaceImages () "> Replace </button> </p>
+
+
+<script>
+  function replaceImages() {
+    // 查询结点
+    var imgs = document.getElementsByTagName('img')
+    // 正向遍历的时候imgs会实时的发生变化，替换掉结点后dom里面也是要替换的，由于它是类数组的对象，所以它的下标
+    // 会变化，导致的结果就是跳过了原本修改之前的下标为1的元素，第一次循环完成后它是1，但是第一元素已经无了
+    // 下标变化
+    // 所以它会直接取到原本下标为2的元素，跳过目标元素
+    for (var i = imgs.length - 1; i > 0; i--) {
+      var img = imgs[i]
+      // 创建结点
+      var text = document.createTextNode(img.alt)
+      // 我们是可以用文本结点替换掉普通结点的
+      // 修改结点
+      img.parentNode.replaceChild(text, img)
+    }
+  }
+
+  document.createElement  // 创建元素结点
+  document.createTextNode  // 创建文本结点
+
+  // 示例
+  span = document.createElement('span')
+  // -> <span></span>
+  span.appendChild(documet.createTextNode('wjasjdsijdis'))
+  // -> "wjasjdsijdis"
+  span
+  // -> <span>wjasjdsijdis</span>
+  div = document.createElement('div')
+  // -> <div></div>
+  div.appendChild(span)
+  // -> <span>wjasjdsijdis</span>
+  div
+  // <div>
+  //   <span>wjasjdsijdis</span>
+  // </div>
+
+// 下面代码基于上面代码实现的函数，可以省去很多步骤
+// 根据下面的代码可以创建出许多复杂的dom结构
+function elt(tagName, ...childs) {
+  var node = document.createElement(tagName)
+  for (var i = 0; i < childs.length; i++) {
+    var child = childs[i]
+    if(typeof child == 'string') {
+      node.appendChild(document.createTextNode(child))
+    } else {
+      node.appendChild(child)
+    }
+  }
+  return node
+}
+
+// 拥有属性
+function elt(tagName, attrs = {}, ...childs) {
+  var node = document.createElement(tagName)
+  for (var key in attrs) {
+    var val = attrs[key]
+    // 设置结点属性名，属性值
+    node.setAttribute(key, val)
+  }
+  for (var i = 0; i < childs.length; i++) {
+    var child = childs[i]
+    if(typeof child == 'string') {
+      node.appendChild(document.createTextNode(child))
+    } else {
+      node.appendChild(child)
+    }
+  }
+  return node
+}
+
+// html标签的属性叫attributes
+// dom对象的属性叫property
+
+imgs = document.getElementsByTagName('img')
+// 由原版的动态集合直接构造了一个数组出来
+Array.from(imgs).forEach(it => {
+  it.parentNode.removeChild(it)
+})
+</script>

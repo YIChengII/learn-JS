@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div>
+    <button>1</button>
+    <button>2</button>
+    <button>3</button>
+    <button>4</button>
+    <button>5</button>
+    <button>6</button>
+    <button>7</button>
+    <button>8</button>
+    <button>9</button>
+    <button>10</button>
+  </div>
+
+  <script>
+    var div = document.querySelector('div')
+    div.addEventListener('click', e => {
+      if (e.target.tagName == 'BUTTON') {
+        // console.log(e.target.textContent)
+        // 找到下标
+        var idx = Array.from(div.children).indexOf(e.target)
+        console.log(idx)
+      }
+    })
+    
+    var buttons = document.querySelectorAll('button')
+      // 没有let的是时候是怎么做的？
+      (function (i) { // 形参i
+        buttons[i].addEventListener('click', e => {
+          console.log(i)
+        })
+        } (i)) // 现传现调
+        // 为什么使用var出来的结果就是9而使用let出来的结果就是正确的遍历结果
+        // 因为var没有块级作用域，所以它只运行一次，而let不一样，它有块级作用域，循环体里面每走一次，都得调i
+        for (let i = 0; i < button.length; i++) {
+          buttons[i].addEventListener('click', e => {
+            console.log(i)
+          })
+        }
+    // 他一直会log出9，
+    // $0.matches() 可以判断当前的某个元素是否匹配当前的某个选择器
+  </script>
+</body>
+
+</html>

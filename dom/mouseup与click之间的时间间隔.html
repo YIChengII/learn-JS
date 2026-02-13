@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div>
+    Lorem ipsum dolor sit amet consectetur, adipisicing elit. Ipsum incidunt excepturi tempora?
+  </div>
+  <script>
+    var div = document.querySelector('div')
+
+    div.addEventListener('mouseup', e => {
+      div.innerText += 'aaa'
+    })
+    div.addEventListener('click', e => {
+      div.innerText += 'bbbb'
+    })
+  </script>
+</body>
+</html>

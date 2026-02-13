@@ -1,0 +1,48 @@
+<div>
+  <div data-tabname="所有">aksjdajd</div>
+  <div data-tabname="文档">asdasdad</div>
+  <div data-tabname="详情">asdasdsdd</div>
+</div>
+
+<script>
+  // 表示一個分頁展示的一個程序
+
+  function asTabs(node) {
+    var childs = Array.from(node.children)
+    var buttons = []
+    var childDiv = document.createElement('div')
+    var buttonDiv = document.createElement('div')
+    var currentDisplayIndex = 0
+
+    for (let i = 0; i < childs.length; i++) {
+      let child = childs[i]
+      child.style.display = 'none'
+      childDiv.append(child)
+
+      let btn = document.createElement('button')
+      buttons.push(btn)
+      btn.textContent = child.dataset.tabname
+      buttonDiv.append(btn)
+
+      btn.addEventListener('click', e => {
+        buttons[currentDisplayIndex].style.color = 'black'
+        btn.style.color = 'red'
+        childs[currentDisplayIndex].style.display = 'none'
+        child.style.display = 'block'
+        currentDisplayIndex = i
+      })
+    }
+
+    buttons[0].click()
+    node.append(buttonDiv, childDiv)
+  }
+
+  asTabs(document.querySelector('div'))
+
+
+
+  // eval(str) 可以把一段字符串當代碼執行
+
+  // var f = new Function(node) 上述代碼可以把code字符串當成構造出來的函數體
+  // 然後調用f（）即可執行裏面的代碼並得到其結果
+</script>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body {
+      height: 200px;
+    }
+
+    .dot {  
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background-color: blue;
+      position: absolute;
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    addEventListener('mousedown', e => {
+      addEventListener('mousemove', onMove)
+    })
+    addEventListener('mouseup', e => {
+      removeEventListener('mousemove', onMove)
+    })
+    function onMove(e) {
+      var dot = document.createElement('div')
+      dot.classList.add('dot')
+      dot.style.left = e.pageX - 4 + 'px'
+      dot.style.top = e.pageY - 4 + 'px'
+      document.body.append(dot)
+    }
+    // addEventListener('mousemove', e => {
+    //   var dot = document.createElement('div')
+    //   dot.classList.add('dot')
+    //   dot.style.left = e.pageX - 4 + 'px'
+    //   dot.style.top = e.pageY - 4 + 'px'
+    //   document.body.append(dot)
+    // })
+  </script>
+</body>
+
+</html>

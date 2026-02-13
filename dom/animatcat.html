@@ -1,0 +1,17 @@
+<p style="text-align: center">
+  <img src="img/cat.png" style="position: relative">
+</p>
+<script>
+  var cat = document.querySelector("img");
+  var angle = 0, lastTime = null;
+  function animate(time) {
+    if (lastTime != null)
+      angle += (time - lastTime) * 0.001;
+    lastTime = time;
+    cat.style.top = (Math.sin(angle) * 20) + "px";// 如果改成Math.sin(Data.now() * 0.001),那麽所有電腦實時一樣
+    cat.style.left = (Math.cos(angle) * 200) + "px";
+    requestAnimationFrame(animate);
+  }
+  
+  requestAnimationFrame(animate);
+</script>

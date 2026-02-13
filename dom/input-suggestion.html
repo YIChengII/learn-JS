@@ -1,0 +1,65 @@
+<input type="text" id="field">
+<div id="suggestions" style="cursor: pointer"></div>
+
+<script>
+  // 这个代码是模拟百度等各大浏览器的那个自动联想的功能
+
+  // 有时候的话，网络往往会延迟的，所以前面发出去的请求还没有返回，第二个请求发出去了
+  // 然后第二个请求的话先于第一个请求返回然后显示第一个请求，第二个请求忽略掉了
+  // 也就是满响应覆盖快响应
+  // 下面是解决的方法
+
+  var input = document.querySelector('input')
+  var suggest = document.querySelector('#suggestions')
+  var displayTime = 0
+  input.addEventListener('input', () => {
+    var text = input.value.trim() // 这个方法是可以将value前后的空白给它删掉
+    var inputTime = Date.now()
+    getSuggestion(text, suggestions => {
+      if(inputTime > displayTime) {
+        displayTime = inputTime
+        suggest.textContent = '' // 这一步是清空上一次显示的内容
+        for (var s of suggestions) {
+          var sDiv = document.createElement('div')
+          sDiv.textContent = s
+          suggest.append(sDiv)
+        }
+      }
+    })
+  })
+
+  function getSuggestion(text, f) {
+    var result = []
+    if(text == '') {
+      return result  
+    }
+    for (var i = 0; i < 10; i++) {
+      result.push(text + i) 
+    }
+    setTimeout(() => {
+      f(result)
+    }, 50 + Math.random() * 400)
+    return result  
+  }
+
+
+  // 一个真正的'实'用的函数
+  var s;
+  function suggested(data) {
+    s = data.g.map(it => it.q)
+  }
+  function getSuggestion(text, f) {
+    var url = `https://www.baidu.com/sugrec?pre=1&p=3&ie=utf-8&json=1&prod=pc&from=pc_web&sugsid=62325,63142,63241,63327,63356,63391,63441,63509,63538,63545,63568,63564,63584,63579&wd=${ text }&req=2&csor=3&pwd=aa&cb=suggested&_=1749648202197`
+
+    var script = document.createElement('script')
+    script.src = url
+    script.onload = () => {
+      f(s)
+    }
+    document.body.append(script)
+  }
+
+
+  // https://www.baidu.com/sugrec?pre=1&p=3&ie=utf-8&json=1&prod=pc&from=pc_web&sugsid=62325,63142,63241,63327,63356,63391,63441,63509,63538,63545,63568,63564,63584,63579&wd=afwef&req=2&csor=3&pwd=aa&cb=jQuery1102043823018255880297_1749648202193&_=1749648202197
+
+</script>

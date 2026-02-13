@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div>
+    <button>aaaaa</button>
+  </div>
+  <script>
+
+    // 注意整個程序的流程是     （捕獲 ---- 冒泡）
+    var btn = document.querySelector('button')
+    var div = document.querySelector('div')
+    var body = document.body
+
+    btn.addEventListener('click', e => {
+      console.log(1)
+      // 阻住传播
+      // e.stopPropagation()
+      // 立即停止传播
+      // e.stopImmediatePropagation()
+      console.log(3)
+    })
+    btn.addEventListener('click', e => {
+      console.log(2)
+    })
+
+
+    div.addEventListener('click', e => {
+      console.log('div click')
+    })
+    body.addEventListener('click', e => {
+      console.log('body click')
+    })
+
+    // 高階函數裏面的那個e就是event
+    // 屬性                         方法 說明
+    // event.type	                  事件類型，例如 "click"、"keydown"
+    // event.target	                觸發事件的實際元素（例如被點擊的按鈕）
+    // event.currentTarget	        綁定事件監聽器的元素
+    // event.which	                滑鼠按鍵代碼（1 左鍵、2 中鍵、3 右鍵）
+    // event.stopPropagation()	    阻止事件冒泡
+    // event.preventDefault()	      阻止預設行為
+
+
+
+    //  event 物件的作用：它記錄了這次事件的「所有細節」
+
+    // 就像監控攝像頭記錄下整個事件現場，event 物件記錄了：
+    // 屬性	                        含義	                                     範例值
+    // event.type	                  事件類型	                                 "mousedown"
+    // event.target	                觸發事件的元素	                            <button>
+    // event.pageX、event.pageY	    滑鼠的座標位置                             （相對頁面）	182、97
+    // event.which	                哪個滑鼠鍵被按下                           （1左鍵、2中鍵、3右鍵）	3
+    // event.altKey、event.ctrlKey、event.shiftKey	                           是否按著 Alt/Ctrl/Shift	true / false
+    // event.stopPropagation()	      阻止事件冒泡（阻止事件傳給父元素）	          —
+    // event.preventDefault()	      阻止瀏覽器預設行為（如右鍵菜單）	              —
+
+    // charCodeAt(index) 是 JavaScript 字符串的方法，用來取得指定位置字符的 Unicode 編碼（UTF-16 code unit）。
+    // String.fromCharCode(code)    由 Unicode 編碼生成字符String.fromCharCode(86)    "V"
+
+
+
+    // 一般 <div> <p>  預設不能聚焦  但可透過 tabindex 屬性讓它能聚焦
+
+    // 事件名稱：keypress 當你按下一個能產生可見字符的按鍵（例如 A、B、1、空格等）時會觸發。
+
+
+    // 讓元素主動獲取焦點
+    // <input id="name" type="text">  document.getElementById("name").focus();
+    // box.addEventListener("blur", () => console.log("失去焦點"));
+    // 元素獲得焦點	focus	例如點擊 <input>
+    // 元素失去焦點	blur	點到別的地方時
+    // 主動設焦點	.focus()	JS 手動聚焦
+    // 主動取消焦點	.blur()	JS 手動移除焦點
+    // 讓輸入框自動獲得焦點
+
+
+
+    // click	               點擊元素時觸發
+    // dblclick	             雙擊元素時觸發
+    // mousedown	           按下滑鼠鍵時觸發
+    // mouseup	             放開滑鼠鍵時觸發
+    // mousemove	           滑鼠移動時持續觸發
+    // mouseover	           滑鼠進入元素時觸發（包含子元素）
+    // mouseout	           滑鼠離開元素時觸發（包含子元素）
+    // mouseenter	         滑鼠進入元素本身（不含子元素）
+    // mouseleave	         滑鼠離開元素本身（不含子元素）
+  </script>
+</body>
+
+</html>

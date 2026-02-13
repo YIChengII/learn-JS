@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    div {
+      border: 2px solid;
+      padding: 10px;
+    }
+    p {
+      border: 3px solid red;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Assumenda corporis rerum in!</p>
+  </div>
+  <script>
+    var div = document.querySelector('div')
+    div.addEventListener('mouseover', e => {
+      console.log(e)
+      div.style.backgroundColor = 'violet'
+      console.log('add color')
+    })
+    div.addEventListener('mouseout', e => {
+      console.log(e)
+      div.style.backgroundColor = ''
+      console.log('remove color')
+    })
+    // 被动事件：
+     // 事件处理函数将不会调用preventDefault()
+     // 声明成被动事件的处理函数不能调用preventDefault()，如果调了会报错，且无效
+     // 被动事件由于不会调用prevent,所以其默认行为可以和函数同时执行，以减少默认行为大的响应延迟，如滚动事件
+     el.addEventListener('eventname', f, {
+      once: true/false, // 是否是单次事件
+      passive: true/false, // 是否是被动事件
+      capture: true/false, // 是否是捕获事件
+     })
+  </script>
+</body>
+</html>

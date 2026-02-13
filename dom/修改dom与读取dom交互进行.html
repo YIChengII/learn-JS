@@ -1,0 +1,170 @@
+<p> <span id="one"> </span> </p>
+<p> <span id="two"> </span> </p>
+
+
+<script>
+
+  function buildTable(objs) {
+    var table = document.createElement('table')
+    var keys = Object.keys(objs[0])
+    var tr = document.createElement('tr')
+    for (var key of keys) {
+      var th = document.createElement('th')
+      th.appendChild(document.createTextNode(key))
+      tr.appendChild(th)
+    }
+    table.appendChild(tr)
+    for (var obj of objs) {
+      let tr = document.createElement('tr')
+      for (var key of keys) {
+        var val = obj[key]
+        var td = document.createElement('td')
+        td.appendChild(document.createTextNode(val))
+        if (typeof val === 'number') {
+          td.style.textAlign = 'right'   // 將數字那一欄設定為右對其
+        }
+        tr.appendChild(td)
+      }
+      table.appendChild(tr)
+    }
+    return table
+  }
+
+  // 遍历结点
+  // html里面，结点的开始标签的出现顺序即为结点的先序遍历序列
+  function traverse(node, action) {
+    if (node) {
+      action(node)
+      traverse(node.left, action)
+      traverse(node.right, action)
+    }
+  }
+  // 如果是dom
+  function traverse(node, action) {
+    if (node.nodeType == document.ELEMENT_NODE) {
+      if (action(node) === flase) return false
+      // children是包含node结点的元素子节点不包含注释等等
+      // childNodes是包含所有node的子节点，all！！！
+      for (var child of node.children) {
+        if (traverse(child, action) === false) return false
+      }
+    }
+  }
+  function getElementsByTagName(tagName) {
+    // 只限元素節點：只有 nodeType 為 1 的節點才有 tagName，其他節點（如文字）會是 undefined。
+    tagName = tagName.toUpperCase() //但在 DOM 中，元素的 tagName 屬性總是以大寫形式儲存和返回 
+    //（例如，<div> 的 ele.tagName 是 'DIV'）。
+    //如果用戶傳入小寫如 'div'，而不轉大寫，就會匹配失敗。所以轉成大寫確保一致性。
+    var result = []
+    traverse(document.documentElement, ele => {
+      if (ele.tagName == tagName) {
+        result.push(ele)
+      }
+    })
+    return result
+  }
+ 
+////////////////////////////////////////////////////////////////
+// 原型鏈的解析代碼
+  class Animal {
+    constructor(name) {
+      this.name = name;
+    }
+    speak() {
+      console.log(this.name + ' makes a sound.');
+    }
+  }
+  class Dog extends Animal { // extends關鍵字是說Dog類繼承Animal父類
+    constructor(name) {
+      super(name);
+    }
+    bark() {
+      console.log(this.name + ' barks.');
+    }
+  }
+  let dog = new Dog('Buddy');
+  dog.speak(); // 同上
+/////////////////////////////////////////////////////////////////
+
+
+  function getElementsByTagName(node, tagName) {
+    var result = []
+    for (var child of node.children) {
+      if (child.tagName == tagName) {
+        result.push(child)
+      }
+      result.push(...getElementsByTagName(child, tagName)) //如果沒有這個展開運算符的話，那麽會將數組整個當作一個元素
+    }
+    return result
+  }
+
+
+  // 避免多传数组
+  function getElementsByTagName(node, tagName, result = []) {
+    for (var child of node.children) {
+      if (child.tagName == tagName) {
+        result.push(child)
+      }
+      result.push(...getElementsByTagName(child, tagName, result))
+    }
+    return result
+  }
+
+  function getElementById(id) {
+    var result = null
+    traverse(document.documentElement, el => {
+      if (el.id == id) {
+        result = el
+        return false
+      }
+    })
+    return result
+  }
+
+  // 前提不是文本结点
+  function getElementById(id, node = document.documentElement) {
+    if (node.id == id) {
+      return node
+    } else {
+      for (var child of node.children) {
+        var result = getElementById(id, child)
+        if (result) {
+          return result
+        }
+      }
+      return null
+    }
+  }
+
+
+  // innerHTML是需要考虑文本结点的
+  function getInnerHTML(node) {
+    var result = ''
+    for (var child of node.childNodes) {
+      if (child.nodeType == document.TEXT_NODE) { // 文本结点
+        result += child.nodeValue
+      } else if (child.nodeType == document.ELEMENT_NODE) { // 元素结点
+        result += '<' + child.tagName + '>' + getInnerHTML(child) + '</' + child.tagName + '>'
+      }
+    }
+    return result
+  }
+
+  // 没有考虑属性集合
+  function getOuterHTML(ndoe) {
+    if (node.nodeType == document.TEXT_NODE) {
+      return node.nodeValue
+    } else if (node.nodeType == document.ELEMENT_NODE) {
+      return result = '<' + node.tagName + ' ' + getAttrs(node) + '>' // 获得属性getArres
+      for (child of node.childNodes) {
+        result += getOuterHTML(child)
+      }
+      reuslt += '</' + node.tagName + '>'
+      return result
+    } else if (node.nodeType == document.COMMENT_NODE) {
+      return '<!--' + node.nodeValue + '-->'
+    } else {
+      return ''
+    }
+  }
+</script>

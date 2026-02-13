@@ -1,0 +1,32 @@
+<textarea id="codeInput">return "hi"</textarea>
+<button id="output">Run</button>
+<pre id="output"></pre>
+<style>
+  html {
+    background-color: black;
+    color: white
+  }
+</style>
+  <script>
+    console.log()
+    button.addEventListener('click', e => {
+      output.textContent = ''
+      var code = codeInput.value
+
+      var console = {
+        log: function(...args) {
+          var text = args.join(' ')
+          output.textContent += text + "\n" 
+        }
+      }
+
+      var result = eval(code) // document.body.innerHTML = ''
+
+      output.textContent += result + "\n"
+    })
+
+
+
+    // 永远不要把用户的输当作代码执行！！！！！！！！！！！！（例如C语言里面的如果在leetcode上面写steyem("showtdown")直接
+    // 会关机！！！！！
+  </script>

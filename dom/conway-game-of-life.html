@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>game of life</title>
+</head>
+
+<body>
+  <div id="stage"></div>
+  <button id="next">next generation</button>
+  <button id="autoPlay">auto play</button>
+  <script>
+    class Conwa {
+      constructor(w, h) {
+        this.width = w
+        this.height = h
+        this.world = new Array(h).fill(0).map(it => new Array(w).fill(0))
+      }
+
+      set(row, col, val = 1) {
+        this.world[row][col] = val
+      }
+
+      randomSeed() {
+        for (var row = 0; row < this.height; row++) {
+          for (var col = 0; col < this.width; col++) {
+            if (Math.random() < 0.1) {
+              this.world[row][col] = 1
+            }
+          }
+        }
+        return this
+      }
+      countNeight(row, col) {
+        var count = 0
+        for (var r = row - 1; r <= row + 1; r++) { // 遍历的地方就是row - 1, row, row + 1 三个
+          for (var c = col - 1; c <= col + 1; c++) {
+            if (this.world[r]?.[c] == 1) {
+              count++
+            }
+          }
+        }
+        return count - this.world[row]?.[col]
+      }
+      // countNeight函数的第二个写法
+      countNeight(row, col) {
+        var count = 0
+        for (var r = row - 1; r <= row + 1; r++) {
+          for (var c = col - 1; c <= col + 1; c++) {
+            if (r < 0 || r >= this.height || c < 0 || c >= this.width) continue;
+            if (r === row && c === col) continue; // 不算自己
+            if (this.world[r][c] === 1) count++;
+          }
+        }
+        return count
+      }
+      next() {
+        var newWorld = new Array(this.height).fill(0).map(it => new Array(this.width).fill(0))
+        for (var row = 0; row < this.height; row++) {
+          for (var col = 0; col < this.width; col++) {
+            var n = this.countNeight(row, col)
+            if (n === 3) {
+              newWorld[row][col] = 1
+            } else if (n < 2 || n > 3) {
+              newWorld[row][col] = 0
+            } else if (n >= 2 || n <= 3) {
+              newWorld[row][col] = this.world[row][col]
+            }
+          }
+        }
+        this.world = newWorld
+        return this
+      }
+      toHTML() {
+        var result = '<div>'
+        for (var row = 0; row < this.height; row++) {
+          for (var col = 0; col < this.width; col++) {
+            if (this.world[row][col] == 1) {
+              result += '<input type="checkbox" data-row="' + row + '" data-col="' + col + '"checked>'
+            } else {
+              result += '<input type="checkbox" data-row="' + row + '" data-col="' + col + '">'
+            }
+          }
+          result += '<br>'
+        }
+        result += '</div>'
+        return result
+      }
+    }
+    var game = new Conwa(30, 30)
+    game.randomSeed()
+    game.randomSeed()
+    game.randomSeed()
+    game.randomSeed()
+    game.randomSeed()
+
+    // 事件代理的函数
+    stage.onclick = e => {
+      if (e.target.matches('input')) {
+        game.set(e.target.dataset.row, e.target.dataset.col, e.target.checked ? 1 : 0)
+      }
+    }
+
+    
+    stage.innerHTML = game.toHTML()
+
+    next.onclick = () => {
+      game.next()
+      stage.innerHTML = game.toHTML()
+    }
+
+
+    var intervalId
+    var running = false
+    autoPlay.onclick = () => {
+      if (running) {
+        running = false
+        clearInterval(intervalId)
+      } else {
+        running = true
+        intervalId = setInterval(() => {
+          next.click()
+        }, 200)
+      }
+    }
+    // map 不处理稀疏项
+  </script>
+
+
+  <script>
+    class Conwa {
+      constructor(w, h) {
+        this.width = w
+        this.height = h
+        this.world = new Array(h).fill(0).map(it => new Array(w).fill(0))
+      }
+      next() {
+        var newWorld = new Array(height).fill(0).map(it => new Array(width).fill(0))
+        for (var row = 0; row < this.height; row++) {
+          for (var col = 0; col < this.width; col++) {
+            var n = this.countNeight(row, col)
+            if (n === 3) {
+              newWorld[row][col] = 1
+            } else if (n < 2 || n > 3) {
+              newWorld[row][col] = 0
+            } else if (n >= 2 || n <= 3) {
+              newWorld[row][col] == this.world[row][col]
+            }
+          }
+        }
+        this.world = newWorld
+        return this
+      }
+      countNeight(row, col) {
+        var count = 0
+        for (var r = row - 1; r <= row + 1; r++) {
+          for (var c = col - 1; c <= col + 1; c++) {
+            if(this.world[r]?.[c] == 1) {
+              count++
+            }
+          }
+        }
+        return count - this.world[row]?.[col]
+      }
+      randomSeed() {
+        for (var r = 0; r < this.height; r++) {
+          for (var c = 0; c < this.width; c++) {
+            if(Math.random() < 0.1) {
+              this.world[row][col] = 1
+            }
+          }
+        }
+        return true
+      }
+    }
+  </script>
+</body>
+
+</html>

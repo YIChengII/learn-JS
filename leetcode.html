@@ -1,0 +1,263 @@
+<script id="94">
+  var inorderTraversal = function (root) {
+    var result = []
+    inOrderTraverse(root, val => {
+      result.push(val)
+    })
+    return result
+  };
+
+  inorderTraversal = function (root) {
+    if (root) {
+      return inorderTraversal(root.left).concat(root.val).concat(inorderTraversal(root.right))
+    }
+    return []
+  }
+
+  function inOrderTraverse(root, action) {
+    if (root) {
+      inOrderTraverse(root.left, action)
+      action(root.val)
+      inOrderTraverse(root.right, action)
+    }
+  }
+
+  function inOrderRraverse(root) {
+    if (!root) return []
+    return [
+      ...inOrderRraverse(root.left),
+      node.val,
+      ...inOrderRraverse(root.right)
+    ]
+  }
+  // 莫里斯遍历
+  // 只有在有左子树的情况下寻找前驱节点，并建立临时指针
+  // 为什么这样，因为中序遍历的话，根节点永远在中间，如果没有左子树的话那么根节点就是第一个节点
+  // 如果只有左子树，找左子树在最右节点
+  // 中序前驱不等于父节点，也不等于普通树中“上一个节点”，而是按照【中序遍历顺序】前一个。
+  // 前驱节点就是中序遍历完成后的一个根节点的前一个结点。
+  var inorderTraversal = function (root) {
+    var res = []
+    var current = root
+    while (current) {
+      // 如果没有左子树的话，直接将根节点push进去
+      if (!current.left) {
+        res.push(current.val)
+        currennt = current.right
+      } else {
+        var predecessor = current.left 
+        while (predecessor.right && predecessor.right !== current) {
+          predecessor = predecessor.right
+        }
+        if (!predecessor.right) { // 这个条件的话是将前驱节点和根节点建立临时的链接
+          predecessor.right = current // 这一步就是
+          current = current.left 
+        } else {
+          // 这个步骤将建立的临时节点删除
+          predecessor.right = null
+          res.push(current.val)
+          current = current.right
+        }
+      }
+    }
+    return res
+  }
+</script>
+<script id="11">
+  var maxArea = function (height) {
+    var left = 0
+    var right = height.length - 1
+    var max = 0
+    while (left < right) {
+      if (!height || height.length < 2) {
+        return 0
+      }
+      var h = Math.min(height[left], height[right])
+      var w = right - left
+      max = Math.max(max, h * w)
+      if (height[left] < height[right]) {
+        left++
+      } else {
+        right--
+      }
+    }
+    return max
+  };
+  var maxArea = function (height) {
+    var maxArea = 0
+    var n = height.length
+    for (var i = 0; i < n; i++) {
+      for (var j = i + 1; j < n; j++) {
+        var h = Math.min(height[i], height[j])
+        var w = j - i
+        maxArea = Math.max(maxArea, h * w)
+      }
+    }
+    return maxArea
+  }
+</script>
+<script id="100">
+  var isSameTree = function (p, q) {
+    // 两个都为空，如果不满足那么证明至少有一个是非空
+    if (!p && !q) return true
+    // 有一个为空，再加上前面的条件，说明一个空一个不空
+    if (!p || !q) return false
+    if (p.val == q.val) {
+      return isSameTree(p.left, q.left) && isSameTree(p.right, q.right)
+    } else {
+      return false
+    }
+  };
+</script>
+
+<script id="104">
+  // 层序遍历
+  var maxDepth = function (root) {
+    if (root == null) return 0
+    // 初始化一个队列，里面先放入根节点
+    var queue = [root]
+    var depth = 0
+    // 每一轮while表示我们在处理树的某一层
+    while (queue.length > 0) {
+      // 这个变量是为了处理这一层的结点
+      var levelSize = queue.length
+      for (var i = 0; i < levelSize; i++) {
+        var node = queue.shift()
+        if (node.left) queue.push(node.left)
+        if (node.right) queue.push(node.right)
+      }
+      depth++
+    }
+    return depth
+  }
+</script>
+<script id="105">
+  // 新颖做法，使用索引和哈希表来做，（构造树 + 哈希 + 索引）
+  var buildTree = function (preorder, inorder) {
+    var inorderMap = new Map()
+    inorder.forEach((val, idx) => {
+      inorderMap.set(val, idx)
+    })
+    var preIndex = 0
+    function helper(inLeft, inRight) {
+      if (inLeft > inRight) return null
+      var rootVal = preorder[preIndex++]
+      var root = new TreeNode(rootVal)
+      var index = inorderMap.get(rootVal)
+      root.left = helper(inLeft, index - 1)
+      root.right = helper(index + 1, inRight)
+      return root
+    }
+    return helper(0, inorder.length - 1)
+  }
+</script>
+<script id="16">
+  var threeSumClosest = function (nums, target) {
+    // 数组排序
+    nums.sort((a, b) => a - b)
+    var n = nums.length
+    // 初始化为前三个数的和，保证一开始就有合法的和可以比较
+    var closest = nums[0] + nums[1] + nums[2]
+    // 开始遍历这个数组
+    for (var i = 0; i < n - 2; i++) {
+      // 固定第一个数nums[i]，取到两个指针
+      var left = i + 1, right = n - 1
+      while (left < right) {
+        // 每次计算三个值的和sum
+        var sum = nums[i] + nums[left] + nums[right]
+        // 更新最接近的值,取最大值的原因是不用用来比较谁大谁小，而是用来比较谁更接近target
+        // 所以必须取绝对值来衡量差距
+        if (Math.abs(sum - target) < Math.abs(closest - target)) {
+          closest = sum
+        }
+        // 根据sum和target的大小来确定是否移动左指针还是移动右指针
+        // 移动指针
+        if (sum < target) {
+          left++
+        } else if (sum > target) {
+          right--
+        } else {
+          return sum
+        }
+      }
+    }
+    // 遍历结束返回最接近的值
+    return closest
+  };
+</script>
+<script id="15">
+  var threeSum = function (nums) {
+    var result = []
+    nums.sort((a, b) => a - b)
+    for (var i = 0; i < nums.length - 2; i++) {
+      // 如果当前nums[i] 和前一个相同，就跳过，避免重复解
+      // continue表示跳过本次循环的剩余语句，直接进入下一轮循环
+      if (i > 0 && nums[i] === nums[i - 1]) continue
+      var left = i + 1
+      var right = nums.length - 1
+      while (left < right) {
+        var sum = nums[i] + nums[left] + nums[right]
+        if (sum == 0) {
+          result.push([nums[i], nums[left], nums[right]])
+          // 接下来是去重的处理，while的作用就是去重
+          while (left < right && nums[left] === nums[left + 1]) left++
+          while (left < right && nums[right] === nums[right - 1]) right--
+          // 下面这两个是找到三元组后才进行的操作，就是result.push这一步成功走完的时候
+          left++
+          right--
+        } else if (sum < 0) {
+          left++
+        } else {
+          right--
+        }
+      }
+    }
+    return result
+  };
+</script>
+<script id="leetcode回溯算法">
+  var map = {
+    2: 'abc',
+    3: 'def',
+    4: 'ghi',
+    5: 'jkl',
+    6: 'mno',
+    7: 'pqrs',
+    8: 'tuv',
+    9: 'wxyz',
+  }
+  var letterCombinations = function(digits) {
+    // if (digits == '') return []   考虑性能的话可以写在这里
+    var result = []
+    bt(digits, 0, '')
+    return result
+    function bt(digits, i, history = '') {
+      if(i == digits.length)  {
+        history.length > 0 && result.push(history)
+        return 
+      }
+      var num = digits[i]
+      var chars = map[num]
+
+      for (var char of chars) {
+        bt(digits, i + 1, history + char)
+      }
+    }
+  }
+
+  var letterCombinations = function (digits) {
+    if(digits =='') return [] // 递归出口1
+    if(digits.length == 1) return map[digits].split('') // 递归出口2
+    var first = digits[0]
+    var chars = map[first]
+    var rest = digits.slice(1)
+    var restResult = letterCombinations(rest) // 它在递归调用第二层的时候它直接返回了，所以它不走递归出口二下面的逻辑
+    var result = []
+    for (var char of chars) {
+        for (var r of restResult) {
+            result.push(char + r)
+        }
+    }
+    return result
+}
+</script>

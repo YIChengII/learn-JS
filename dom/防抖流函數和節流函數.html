@@ -1,0 +1,58 @@
+<script>
+  // 面试函数，写不出来基本凉凉
+
+  // 這個函數是用來防抖動的函數
+  function debounce(f, time) {
+    var id;
+    return function () {
+      clearTimeout(id);
+      id = setTimeout(() => {
+        f()
+      }, time)
+    }
+  }
+
+  // 如果有剩餘參數的話
+  function debounce(f, time) {
+    var id;
+    return function (...args) {
+      clearTimeout(id)
+      id = setTimeout(() => {
+        f(...args)
+      }, time)
+    }
+  }
+
+/////////////////////////////////////////////////////////////////////////////
+  function logMouseMove(e) {
+    console.log('滑鼠座標:', e.clientX, e.clientY)
+  }
+  var throttledMove = throttle(logMouseMove, 1000)
+  document.addEventListener('mousemove', throttledMove)
+  // 鼠標或者其它的高頻觸發的事件的，時間節流的通用函數
+  function throttle(f, time) {
+    var scheduled = false
+    var lastArgs = []
+    return function (...args) {
+      lastArgs = args
+      if (!scheduled) {
+        scheduled = true
+        setTimeout(() => {
+          scheduled = false
+          f(...lastArgs)
+        }, time)
+      }
+    }
+  }
+////////////////////////////////////////////////////////////////////////////
+
+
+  function replaceSelection(field, word) {
+    var from = field.selectionStart, to = field.selectionEnd
+    field.value = field.value.slice(0, from) + word + field.value.slice(to)
+    field.selectionStart = field.selectionEnd = from + word.length
+  }
+  // 表单文本框的change事件在焦点离开时才触发，所以可以用input事件代替
+  // js 主动更改表单元素的值时，change事件不会触发，原因在于“事件”的目的是通知那个不知道事件发生的代码事件发生了，让它做出响应
+  // 而用js修改元素的值，是程序（也即是编程者）主动执行的，它当然知道东西变了，所以就不触发
+</script>

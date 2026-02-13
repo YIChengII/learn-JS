@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <p>Drag the bar to change its width :</p>
+  <div style="background: orange; width: 60px; height: 20px"></div>
+
+  <script type="">
+  var lastX; // Tracks the last observed mouse X position
+  var rect = document.querySelector("div");
+  rect.addEventListener("mousedown", function (event) {
+    if (event.which == 1) {
+      lastX = event.pageX;
+      addEventListener("mousemove", moved);
+      event.preventDefault(); // Prevent selection
+    }
+  });
+  function buttonPressed(event) { // 這個函數的作用是檢查瀏覽器有沒有提供這個屬性event.buttons
+    if (event.buttons == null) {
+      return event.which != 0;
+    } else {
+      return event.buttons != 0;
+    }
+  }
+
+  function moved(event) {
+    if (!buttonPressed(event)) {
+      removeEventListener("mousemove", moved);
+    } else {
+      var dist = event.pageX - lastX;
+      var newWidth = Math.max(10, rect.offsetWidth + dist);
+      rect.style.width = newWidth + "px";
+      lastX = event.pageX;
+    }
+  }
+
+
+  
+  // mouseover	滑鼠指針進入某個元素時觸發
+  // mouseout	滑鼠指針離開某個元素時觸發
+</script>
+
+  <script>
+    // 這個例子説的是在鼠標的初始位置停止移動
+    var initX; // Tracks the last observed mouse X position
+    var rect = document.querySelector("div");
+    rect.addEventListener("mousedown", function (event) {
+      if (event.which == 1) {
+        initX = event.pageX;
+        initWidth = rect.offsetWidth
+
+        addEventListener("mousemove", moved);
+        event.preventDefault(); // Prevent selection
+      }
+    });
+
+    function moved(event) {
+      if (event.buttons == 0) {
+        removeEventListener("mousemove", moved);
+      } else {
+        var dist = event.pageX - initX;
+        var newWidth = Math.max(10, initWidth + dist);
+        rect.style.width = newWidth + "px";
+      }
+    }
+  </script>
+
+
+</body>
+
+</html>

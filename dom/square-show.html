@@ -1,0 +1,13 @@
+<script>
+  // 主线程构件一个worker对象
+  var worker = new Worker('./square-worker.js')
+
+  // 监听worker里面发出来的数据，也就是square-worker里面的postmessage发送的
+  worker.addEventListener('message', e => {
+    console.log(e.data)
+  })
+
+
+
+// worker.postMessage(25)  // -> square-worker // -> square-show //-> console.log(e.data) // -> 625
+</script>

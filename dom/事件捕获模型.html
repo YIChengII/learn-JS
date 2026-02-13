@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    div {
+      border: 3px solid;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <button>aaa</button>
+  </div>
+  <script>
+    var div = document.querySelector('div')
+    var button = document.querySelector('button')
+    var body = document.querySelector('body')
+
+
+    button.addEventListener('click', e => {
+      console.log('button click')
+    })
+    div.addEventListener('click', e => {
+      console.log('div click maopao')
+    })
+    div.addEventListener('click', e => {
+      console.log('div click buhuo')
+    }, {
+      capture: true
+    })
+
+    body.addEventListener('click', e => {
+      console.log('body click maopao')
+    })
+    body.addEventListener('click', e => {
+      console.log('body click buhuo')
+    }, {
+      capture: true
+    })
+
+    // DOMContentLoaded事件
+    // 源代码解析完成，DOM构造完成的时候触发（不必等图片资源的加载）
+    // 它比window.onload触发
+
+
+    document.addEventListener('readystatechange', e => {
+      // 由于本事件会触发两次，只有在下面条件达成的时候才是DOM解析完成的时候，所以这么写
+      if (document.readyState == 'complete') {
+        init()
+      }
+    })
+
+
+
+  </script>
+</body>
+</html>

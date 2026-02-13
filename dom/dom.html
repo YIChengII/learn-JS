@@ -1,0 +1,294 @@
+<script>
+  // 这个结点及其里面的某个结点或者某个结点的文本结点中是否提到过这个text字符串
+  function talksAbout(node, text) {
+    // 如果这个结点的nodeType == 文本结点
+    if (node.nodeType == document.TEXT_NODE) {
+      // 找到了就返回≥0的数，找到了就告诉你找到的位置在哪里
+      return node.data.indexOf(text) >= 0 // 整个这个是一个布尔表达式,indexOf返回的是第一次遇见目标字符串的下标
+      // 如果它是元素结点的话我们就是看元素结点里面的每个子节点是否考虑到了
+    } else if (node.nodeType == document.ELEMENT_NODE) {
+      for (var i = 0; i < node.childNodes.length; i++) {
+        if (talksAbout(node.childNodes[i], text)) {
+          return true
+        }
+      }
+      return false
+    }
+  }
+
+  var link = document.body.getElementsByTagName("a")[0];
+  // 但如果你不加 [0]，返回的是整个 HTMLCollection 对象——这时候它不是一个 DOM 元素，HTMLCollection是类数组元素，
+  // 你没法直接对它做 .href、.textContent 等操作。
+  console.log(link.href);
+  // -> http://eloquentjavascript.net/
+
+
+  // 递归结构，当然我们只考虑文本结点和元素结点
+
+  // 所有的元素都有一个getElementsByTagName它会收集里面所有给定标签名以及它的后代，并返回一个类数组
+
+  // 它在整个页面的全局去找的，所以它是挂在document上的
+  // document.getElementById，这个函数只有在document函数上面有，元素上面是没有的。查找元素的单个节点
+
+  // 所有的结点都在父节点上去调用，所有的子节点都是由父节点来管理的
+
+  // 还有一个函数根据类名来找，getElementsByClassName
+
+  // removeChild 从文档中删除给定的子节点 
+  // parentNode.appendChild(childNode),将childNode插入到末尾
+  // parentNode.insertBefore(newNode, baseNode),将newNode插入到baseNode的前面,baseNode要已经是parentNode
+  // 的子节点
+  // replaceChild 用于另一个子节点来替换一个子节点（replaceChild和insertBefore都需要新节点来做它的参数）
+  // 注意被替换的节点必须是调用它这个方法的子元素
+
+  // 一个dom结点只能在文档中出现一次，不能在两个地方同时存在
+
+  // $0.cloneNode()克隆元素，克隆它自己
+  // $0.cloneNode(true)深度克隆
+
+  // setAttribute用來設置節點的屬性
+  // getAttribute用来读取指定属性的值
+
+  // document.createElement 创建元素节点
+
+  // 高亮代码，利用了正则表达式
+  function highlightCode(node, keywords) {
+    var text = node.textContent // textContent属性用于获取节点中的所有文本
+    node.textContent = ""// 将它设置为空
+    var match, pos = 0 // match用来存储每次匹配到的结果，pos记录当前的扫描位置
+    while (match == keywords.exec(text)) { // 拿到匹配结果
+      var befor = text.slice(pos, match.index) // 取出当前位置到匹配开始(match.index)之间的文字
+      node.appendChild(document.createTextNode(befor)) // 创建纯文本节点并追加到node中去
+      var strong = document.createElement("strong") // 创建一个strong元素，
+      strong.appendChild(document.createTextNode(match[0])) // 里面放入匹配到的关键字文本
+      node.appendChild(strong) // 插入node
+      pos = keywords.lastIndex // 更新位置
+    }
+    var after = text.slice(pos) // 循环结束后，可能还有一段未匹配的文字
+    node.appendChild(document.createTextNode(after)) // 把剩余的全部追加为普通文本
+  }
+
+  // $0.offsetWidth   宽度
+  // $0.offsetheight   高度
+  // 这两个属性可以读到元素占用的空间大小
+
+  // $0.clientWidth
+  // $0.clientheight
+  // 这两个不包括边框
+
+  // pageXOffset → 水平滚动距离
+  // pageYOffset → 垂直滚动距离
+  // 读取当前页面滚动位置，通常用于 滚动监听、视差效果、固定定位计算 等场景。
+
+  // $0.getBoundingClientRect()   拿到元素的位置，以CSS像素为单位
+  // $0.getClientRects() 拿到元素生成的所有矩形框的数据
+
+  // 视口的大小，window.innerWidth
+  // window.pageYOffset  滚动条的大小
+
+  // 在当前展开的调用栈收回之后浏览器才会去计算布局
+
+  /////////////////////////////////////////////////////////////////
+  <blockquote id="quote">
+    No book can ever be finished. While working on it we learn
+    just enough to find it immature the moment we turn away
+    from it.
+  </blockquote>
+
+  function elt(type) {
+    var node = document.createElement(type);
+    for (var i = 1; i < arguments.length; i++) {
+      var child = arguments[i];
+      if (typeof child == "string") {
+        child = document.createTextNode(child);
+        node.appendChild(child);
+      }
+    }
+    return node
+  }
+  document.getElementById("quote").appendChild(
+    elt("footer", "—",
+      elt("strong", "Karl Popper"),
+      ", preface to the second editon of ",
+      elt("em", "The Open Society and Its Enemies"),
+      ", 1950"));
+
+  // No book can ever be finished. While working on it we learn just enough 
+  // to find it immature the moment we turn away from it.
+  // —Karl Popper, preface to the second editon of The Open Society and Its Enemies, 1950
+
+
+  /////////////////////////////////////////////////////////////////////
+  // 代码性能分析的重要工具，火焰图
+  // eval(str)可以把一段字符串当代码执行
+
+
+  // var f = new Function(code)
+  // 上述代码可以把code字符串可以把当成构造出来的函数的函数体，然后调用f()即可执行里面的代码并得到其结果
+
+  // consider the childNodes property that element nodes in the DOM have. 
+  // This property holds an array-like object, with a length property and properties 
+  // labeled by numbers to access the child nodes. 
+  // But it is an instance of the NodeList type, not a real array, 
+  // so it does not have methods such as slice and forEach.
+  // 考虑 DOM 中元素节点所具有的 childNodes 属性。
+  // 此属性包含一个类似数组的对象，其中包含 length 属性和一些以数字标记的属性，用于访问子节点。
+  // 但它是 NodeList 类型的实例，而不是真正的数组，因此它没有 slice 和 forEach 之类的方法。
+
+
+  // 驼峰命名法
+  // CSS 写法	         JS写法
+  // font-family	     fontFamily
+  // background-color	 backgroundColor
+  // border-radius	   borderRadius
+  // text-align	       textAlign
+
+
+  // <p data-classified="secret">The launch code is 00000000.</p>
+  // <p data-classified="unclassified">I have two feet.</p>
+
+  var paras = document.body.getElementsByTagName("p");
+  Array.prototype.forEach.call(paras, function (para) {
+    if (para.getAttribute("data-classified") == "secret")
+      para.parentNode.removeChild(para); // 注意元素不能自己删自己，只能从父元素上面去删除
+  });
+
+  var languages = {
+    javascript: /\b(function|return|var)\b/g
+  };
+
+  function highlightAllCode() {
+    var pres = document.body.getElementsByTagName("pre");
+    for (var i = 0; i < pres.length; i++) {
+      var pre = pres[i];
+      var lang = pre.getAttribute("data-language");
+      if (languages.hasOwnProperty(lang)) {
+        highlightCode(pre, languages[lang]);
+      }
+    }
+  }
+
+  // The firstChild and lastChild properties point to the first and
+  //  last child elements or have the value null for nodes without children.
+
+  //  previousSibling and nextSibling point to adjacent nodes
+  // 类似地，previousSibling和nextSibling指向相邻节点
+
+  // 类似地，previousSibling 和 nextSibling 指向相邻节点，
+  // 这些节点具有相同的父节点，并且紧邻该节点之前或之后出现。对于第一个子节点
+  // ，previousSibling 将为 null；对于最后一个子节点，nextSibling 将为 null。
+
+  // element.className 是 DOM 元素上的一个属性（通常是字符串），它反映元素的 class 属性值。
+  // 读：el.className → 返回 "card primary"（字符串）
+  // 写：el.className = "card large" → 会覆盖原有所有 class
+  // 示例：
+  // const el = document.querySelector('.card');
+  // console.log(el.className);          // "card primary"
+  // el.className = 'card highlighted';  // 覆盖（会把旧类清掉）
+  // 小坑 / 注意点
+  // 如果你想只增加一个 class，别用 el.className += ' new'（容易忘记空格或重复），推荐用 classList（见下）。
+
+  // 对于 SVG 元素，element.className 在标准 DOM 中并不是简单字符串，而是一个 SVGAnimatedString，这时用
+  //  el.getAttribute('class') 或 el.className.baseVal 来取字符串更稳妥。
+
+  // <p><span id="one"></span></p>
+  // <p><span id="two"></span></p>
+  function time(name, action) {
+    var start = Date.now(); // Current time in milliseconds
+    action();
+    console.log(name, "took", Date.now() - start, "ms");
+  }
+
+  time("naive", function () {
+    var target = document.getElementById("one");
+    while (target.offsetWidth < 2000)
+      target.appendChild(document.createTextNode("X"));
+  });
+  // → naive took 32 ms
+
+  time("clever", function () {
+    var target = document.getElementById("two");
+    target.appendChild(document.createTextNode("XXXXX"));
+    var total = Math.ceil(2000 / (target.offsetWidth / 5));
+    for (var i = 5; i < total; i++) {
+      target.appendChild(document.createTextNode("X"));
+    }
+  });
+  // → clever took 1 ms
+  // 上面这个例子的作用就是减少修改，因为布局需要时间
+ 
+  // querySelectorAll 方法在文档对象和元素节点上均有定义，它接受一个选择器字符串，并返回一个类似数组的对象，其中包含所有匹配的元素。
+
+  /* 子选择器: 只匹配 p 的直接子 a */
+  p > a
+
+  // querySelectorAll is not live
+
+
+
+
+  //   <p style="text-align: center">
+  //   <img src="img/cat.png" style="position: relative">
+  //   </p>
+  //   必須要有style="position: relative"這句話，這樣才能用 JavaScript 改變圖片的 top、left 位置。
+  //   若沒有 position: relative（或 absolute、fixed），top / left 改了也不會動。
+
+
+  // querySelector() 只會回傳第一個符合條件的元素。
+
+  //   var cat = document.querySelector("img");
+  //   var angle = 0, lastTime = null;
+  //   function animate(time) {
+  //     if (lastTime != null)
+  //       angle += (time - lastTime) * 0.001;
+  //     lastTime = time;
+  //     cat.style.top = (Math.sin(angle) * 20) + "px";
+
+  // style.top 期望你給它一個合法的 CSS 值，而不是純數字。
+  // 合法 CSS 值範例：
+  // "10px"
+  // "50%"
+  // "2em"
+
+  //     cat.style.left = (Math.cos(angle) * 200) + "px";
+  //     requestAnimationFrame(animate);
+  //   }
+  //   requestAnimationFrame(animate);
+
+
+
+  // 方法	                       特點	                             缺點
+  // setInterval()	             固定時間間隔執行	                  不同步螢幕刷新率，容易卡頓或撕裂
+  // setTimeout()	               同上	                             精度低，耗能高
+  // requestAnimationFrame()	   跟螢幕刷新率同步（通常60FPS）	     最平滑、節能、適合動畫
+
+  // $0.cloneNode() 克隆節點
+  // $0.cloneNode(true) 深度克隆節點
+  // $0.matches()判斷是否屬於某個選擇器
+  // window.getComputedStyle(ele)可以獲取到元素的所有樣式(它是挂在全局作用域上面的)
+  // el.closest(selector)獲取到某個選擇器的最近的祖先元素
+
+  // el.innerText元素内部的所有文本（去掉html標簽之後中的内容）
+  // el.outerText在讀取的時候同innerText, 在賦值的時候是不一樣的給outerText賦值會直接刪掉元素
+  // el.textContent跟innerText差不多，但是innerText會受css影響（合并后的空格只拿到一個）
+  // ，textContent直接拿到原始文本節點的文字的拼接（空格有多少就拿到多少）  
+
+  // $0.dataset.xxx 可以操作html中data-開頭的屬性attributes
+  // $0.classList.add() 
+  // $0.classList.remove()
+  // $0.classList.toggle()，切換這個類名
+
+  // 书本代码
+  // <!doctype html>
+  // <html>
+  //   <head>
+  //     <title>My home page</title>
+  //   </head>
+  //   <body>
+  //     <h1>My home page</h1>
+  //     <p>Hello, I am Marijn and this is my home page.</p>
+  //     <p>I also wrote a book! Read it
+  //       <a href="http://eloquentjavascript.net">here</a>.</p>
+  //   </body>
+  // </html>
+</script>

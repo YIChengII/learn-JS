@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>solar system</title>
+</head>
+<style>
+  #sun {
+    width: 50px;
+    height: 50px;
+    background-color: orange;
+    border-radius: 9999px;
+    position: fixed;
+  }
+
+  #earth {
+    width: 30px;
+    height: 30px;
+    background-color: blue;
+    border-radius: 9999px;
+    position: fixed;
+  }
+
+  #moon {
+    width: 10px;
+    height: 10px;
+    background-color: orange;
+    border-radius: 9999px;
+    position: fixed;
+  }
+</style>  
+
+<body>
+
+  <div id="sun"></div>
+  <div id="earth"></div>
+  <div id="moon"></div>
+
+
+  <script>
+    // 技术代码就是：获取页面上的3个DOM元素
+    // 业务含义：这三个元素就是太阳、地球、月亮
+    var sun = document.querySelector('#sun')
+    var earth = document.querySelector('#earth')
+    var moon = document.querySelector('#moon')
+    // 当一个元素有id的时候，且这个id可以做为变量名（即没有特殊符号）
+    // 且全局不存在这个变量名，且浏览器会创建出这个变量名并指向该元素，意思就是不用querySelector它
+
+    // 技术实现：浏览器API，专门用来写流畅动画，time是高精度时间戳
+    requestAnimationFrame(function ani(time) {
+      // 在这个代码里面的业务逻辑就是，sun固定在屏幕中心，earth绕着地球转，moon绕着earth转
+      // 技术实现是，使用querySelector获取DOM元素
+      // 使用requestAnimationFrame做动画循环
+      // 使用三角函数Math.sin和Math.cos来计算圆周运动的坐标
+      // 修改style.left/style.top来更新元素的位置
+      var angle1 = time * 0.001
+      var sunX = Math.sin(angle1) * 230 - 25 + window.innerWidth / 2  // 太阳在水平方向的坐标偏移
+      var sunY = Math.cos(angle1) * 230 - 25 + window.innerHeight / 2 // 垂直方向偏移
+      // 两个window.innerWidth，把运动轨道放在屏幕中央
+      // -25: 可能是太阳的半径，让元素的中心对齐
+      sun.style.left = sunX + 'px' // 运动中心的坐标
+      sun.style.top = sunY + 'px'
+      // 业务逻辑：太阳在屏幕中央（或者是一个小范围运动）
+      // 技术逻辑：用三角函数算位置，更新style.left/top
+
+      var angle2 = time * 0.002
+      var earthX = Math.sin(angle2) * 180 - 15 + sunX + 25
+      var earthY = Math.cos(angle2) * 180 - 15 + sunY + 25
+      earth.style.left = earthX + 'px'
+      earth.style.top = earthY + 'px'
+
+      var angle3 = time * 0.005
+      var moonX = Math.sin(angle3) * 50 - 5 + earthX + 15
+      var moonY = Math.cos(angle3) * 50 - 5 + earthY+ 15
+      moon.style.left = moonX + 'px'
+      moon.style.top = moonY + 'px'
+      requestAnimationFrame(ani)
+    })
+
+    // 总结业务代码（场景相关）
+    // 定义太阳、地球、月亮
+    // 太阳在中心，地球绕太阳转，月亮绕地球转
+    // 不同半径和角速度，体现不同天体的轨道
+    // 技术代码（通用方法）
+    // document.querySelector（）获取元素
+    // requestAnimationFrame 做动画
+    // Math.sin/Math.cos实现圆周运动
+    // 修改style.left/top更新元素位置
+  </script>
+</body>
+
+</html>

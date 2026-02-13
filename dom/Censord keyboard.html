@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <textarea id="ck" cols="100" rows="10"></textarea>
+  <script>
+    var ck = document.querySelector('#ck')
+    ck.addEventListener('keypress', e => {
+      if (e.key == 'W' || e.key == 'Q' || e.key == 'X') {
+        e.preventDefault()
+      }
+    })
+    // 粘贴,阻止
+    ck.addEventListener('paste', e => {
+      e.preventDefault()
+      // 能不能通过e对象把剪切板里面的内容替换掉（替换掉WQX这几个字母）
+      var pasteData = e.clipboardData.getData('text/plain')
+      pasteData = pasteData.reaplce(/[WQX]/g, '*')
+      console.log(pasteData)
+      var from = ck.selectionStart
+      var to = ck.selectionEnd
+      ck.value = ck.value.slice(0, from) + pasteData + ck.value.slice(to)
+      // 还原光标
+      ck.selectionEnd = ck.selectionStart = from + pasteData.length
+    })
+    // 不可以拖拽
+    ck.addEventListener('drop', e => {
+      e.preventDefault()
+    })
+    // 输入法事件
+    ck.addEventListener('compositionstart', e => {
+      console.log(e)
+    })
+    ck.addEventListener('compositionend', e => {
+      console.log(e)
+    })
+
+    // 操作对象的属性描述符，实现属性代理
+    var valueDescriptor = Object.getOwnPropertyDescriptor(ck.__proto__, 'value')// 获取原型链上的value属性描述符
+    // 目的是保存原始的value的getter（返回当前值）和settr（设置值并更新UI)
+    // Property Descriptor属性描述符
+
+    Object.defineProperty(ck, 'value', { // 直接在ck对象上定义一个新的value属性，覆盖原有的
+      get: function(){ // 简单调用原始的getter
+        return valueDescriptor.get.call(ck)
+      },
+      set: function(val) { // 在设置值时，先对传入的value进行替换
+        valueDescriptor.set.call(ck, val.replace(/[WQX]/g, '*')) // 2替换，1执行
+      },
+    })
+    // 程序员做法！！！！贴脸开大！！！！
+    // 直接在elments里面找到textarea标签，然后$0.value选中，$0.value'WWWXXXQQQ'
+
+    // if (e.key == 'W' || 'Q' || 'X') {    错误实例因为if总是为真
+    //   e.preventDefault()
+    // }
+
+
+
+
+
+    // 所以这个作业的最终目的就是，后端的配合，前端只能有限的去限制，而具体的定死部位需要后端数据库上面
+    // 也就是服务器上面去限制，有一些后端的人员比较懒或者技术比较菜，所以它就直接将这个工作推给前端
+    // 然后导致的结果就是一栋大楼或一个公司被后端干倒闭了
+    // 也就意味着用户可以修改价格，自定义价格！！
+    // 哈哈哈哈哈哈哈哈哈哈哈哈！！！！！！！！！！！！！
+  </script>
+</body>
+
+</html>

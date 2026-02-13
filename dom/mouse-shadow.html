@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>mouse shadow</title>
+  <style>
+    .mouse-shadow {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background-color: red;
+    }
+  </style>
+
+</head>
+<body>
+  <script>
+    var mousex, mousey
+    addEventListener('mousemove', e => {
+      mousex = e.clientX
+      mousey = e.clientY 
+    })
+
+
+
+    setInterval(function ani() {
+      var s = document.createElement('span')
+      s.classList.add('mouse-shadow')
+      s.style.left = mousex + 'px'
+      s.style.top = mousey + 'px'
+
+      setTimeout(() => {
+        document.body.removeChild(s)
+      }, 16 * 8)
+      document.body.append(s)
+
+
+      requestAnimationFrame(ani)
+    }, 16)
+  </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+// 继承
+function Dog() {
+  this.type = 'dog'
+}
+
+Dog.prototype.bark = function() {
+  console.log('wang wang!')
+}
+
+function GuibingDog(name, age) {
+  Dog.call(this)
+  this.name = name
+  this.age = age
+}
+
+Object.setPrototypeOf(GuibingDog.prototype, Dog.prototype)
+
+GuibingDog.prototype.welcome = function() {
+  console.log('welcome!!!!欢迎欢迎')
+}
+
+// 判断前者是否是后者的实例，存在继承关系才用这个运算符。前者是实例，右边是类名
+console.log(new RTextCell("A") instanceof RTextCell)
+

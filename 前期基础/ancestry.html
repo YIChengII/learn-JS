@@ -1,0 +1,393 @@
+<script src="ancestry.js"></script>
+<script>
+  var ancestry = JSON.parse(ANCESTRY_FILE) // 字符串转对象，反序列化
+
+  console.log(JSON.parse('"hello"')); // "hello"   (string)
+  console.log(JSON.parse('123'));     // 123       (number)
+  console.log(JSON.parse('true'));    // true      (boolean)
+  console.log(JSON.parse('null'));    // null
+
+  // 因为传进去的JSON格式是数组，所以它parse出来的是数组，所以就可以进行forEach方法
+  var byName = {}
+  ancestry.forEach(p => {
+    byName[p.name] = p
+  });
+  // p是循环中的每个元素，包含name和其他属性（如born,mother等）的对象
+
+  // 查找比1924年年轻的人
+  function filter(array, test) {
+    var passed = [];
+    for (var i = 0; i < array.length; i++) {
+      if (test(array[i]))
+        passed.push(array[i]);
+    }
+    return passed;
+  }
+
+  console.log(filter(ancestry, function (person) {
+    return person.born > 1900 && person.born < 1925;
+  }));
+  // 习题
+  // 找到有母亲的人
+  ancestry.filter(p => byName[p.mother])
+
+  // 求出母亲是在什么时候生的他
+  ancestry.filter(p => byName[p.mother]).map(p => {
+    var mother = byName[p.mother]
+    return p.born - mother.born
+  })
+
+  // 求出他们的和，求出平均值，前提是在控制台已经知道的情况下
+  ancestry.filter(p => byName[p.mother]).map(p => {
+    var mother = byName[p.mother]
+    return p.born - mother.born
+  }).reduce((a, b) => a + b) / 18
+
+  
+  // 控制台不知道的情况下，如下
+  var giveBirthAges = ancestry.filter(p => byName[p.mother]).map(p => {
+    var mother = byName[p.mother]
+    return p.born - mother.born
+  })
+
+  giveBirthAges.reduce((a, b) => a + b) / giveBirthAges.length
+
+  // 求平均值
+  [1, 2, 3, 4, 5, 6, 7].reduce((avg, val, i) => {
+    return (avg * i + val) / (i + 1)
+  }, [])
+
+  // 有了上面的求平均值的函数，那么就可以这么写了
+  ancestry.filter(p => byName[p.mother]).map(p => {
+    var mother = byName[p.mother]
+    return p.born - mother.born
+  }).reduce((avg, val, i) => {
+    return (avg * i + val) / (i + 1)
+  })
+
+  ///////////////////////////////////////////////////////////////
+  // 寿命预测
+  // 利用groupBy函数
+  function groupBy(array, predicate) {
+    var result = {}
+    for (var i = 0; i < array.length; i++) {
+      var key = predicate(array[i], i)
+      if (key in result) {
+        result[key].push(array[i])
+      } else {
+        // 如果result对象里面没有key,那么array的第一项也就是【0】当result里的第一项，然后后续直接走上面的逻辑就行了
+        result[key] = [array[i]]
+      }
+    }
+    return result
+
+    function groupBy(array, predicate) {
+      var result = {}
+      for (var i = 0; i < array.length; i++) {
+        var key = predicate(array[i], i)
+        // 直接判断result里面是否有目标key,如果没有直接创建一个数组
+        if (!(key in result)) {
+          result[key] = []
+        }
+        result[key].push(array[i])
+      }
+      return result
+    }
+
+    // 找到这些人他们都是在哪个世纪里面挂掉的
+    console.log(groupBy(ancestry, p => Math.ceil(p.died / 100)))
+
+    //////////////////////////////////////////////////////////////
+    // 把对象的每个值通过transform转换为另外的值，也就是对象map
+    function mapValues(obj, transform) {
+      var result = {}
+      for (key in obj) {
+        result[key] = transform(obj[key], key) // 注意key是字符串
+      }
+      return result
+    }
+
+    mapValues(Object.groupBy(ancestry, p => Math.ceil(p.died / 100)), persons => {
+      return persons.map(it => it.died - it.born).reduce((a, b) => a + b, 0) / persons.length
+    })
+
+    mapValues(Object.groupBy(ancestry, p => Math.ceil(p.died / 100)), persons => persons.map(it => it.died - it.born).reduce((a, b) => a + b, 0) / persons.length)
+    // ->
+    // 16: 43.5   十六世纪的人平均寿命43.5岁，以此类推
+    // 17: 51.2
+    // 18: 52.78947368421053
+    // 19: 54.833333333333336
+    // 20: 84.66666666666667
+    // 21: 94
+
+  }
+
+
+  // keyBy函数，数组转对象
+  // 普通写法
+  function keyBy(array, predicate) {
+    var result = {}
+    for (var i = 0; i < array.length; i++) {
+      var key = predicate(array[i], i)
+      result[key] = array[i]
+    }
+    return result
+  }
+  // chatGpt写法
+  function keyBy(array, keyFn) {
+    const result = {}
+    for (const item of array) {
+      const key = typeof keyFn === 'function' ? keyFn(item) : item[keyFN]
+      result[key] = item
+    }
+    return result
+  }
+  // forEach写法
+  function keyBy(array, predicate) {
+    var result = {}
+    array.forEach((it, i) => {
+      var key = predicate(array[i], i)
+      result[key] = array[i]
+    })
+    return result
+  }
+  // reduce写法
+  function keyBy(array, predicate) {
+    return array.reduce((result, item, i) => {
+      var key = predicate(item, i)
+      result[key] = item
+      return result
+    }, {})
+  }
+
+  function keyBy(array, predicate) {
+    return array.reduce((result, item, i) => {
+      return result[predicate(item, i)] = item, result
+    }, {})
+  }
+
+  function keyBy(array, predicate) {
+    return array.reduce(((result, item, i) => result[predicate(item, i)] = item, result), {})
+  }
+
+
+  var keyBy = (array, predicate) => array.reduce(((result, item, i) => result[predicate(item, i)] = item, result), {})
+
+  ///////////////////////////////////////////////////////
+  // 过滤
+  function filter(array, test) {
+    var result = []
+    for (var i = 0; i < array.length; i++) {
+      // 
+      if (test(array[i])) { // (test(array[i], i, array))
+        result.push(array[i])
+      }
+    }
+    return result
+  }
+  // 性别为女的
+  ancestry.filter((it, i) => {
+    return it.sex == 'f'
+  })
+
+  filter(ancestry, function (it) {
+    if (it.born > 1900 && it.born < 1925) {
+      return true
+    }
+  })
+
+  // 箭头函数
+  filter(ancestry, it => {
+    return it.born > 1900 && it.born < 1925
+  })
+  // 只有一句return的时候可以进行如下操作
+  filter(ancestry, it => it.born > 1900 && it.born < 1925)
+
+  //////////////////////////////////////////////////////////////////////
+  // map方法
+  function map(array, transform) {
+    var result = []
+    for (var i = 0; i < array.length; i++) {
+      result.push(transform(array[i], i, array))
+    }
+    return result
+  }
+
+  map(ancestry, it => it.name)
+
+  map(ancestry, it => it.died - it.born)
+  /////////////////////////////////////////////////////////////////////////////////
+
+  function reduce(array, initialValue, f) {
+    var result = initialValue
+    for (var i = 0; i < array.length; i++) {
+      result = f(result, array[i])
+    }
+    return result
+  }
+
+  // 直接把初始值传给initialvalue
+  function reduce(array, f, initialValue) {
+    var start = 0
+    if (initialValue == undefined) {
+      initialValue = array[0]
+      start = 1
+    }
+    for (var i = start; i < array.length; i++) {
+      initialValue = f(initialValue, array[i])
+    }
+    return initialValue
+  }
+  // 如果调用 reduce() 时不提供初始值，则 reduce() 将从索引 1 开始执行回调函数，跳过第一个索引。
+  // 第一个索引的元素将作为累加器，并且第二个索引的元素将作为当前值开始执行回调函数。
+  reduce([1, 2, 3, 4, 5], 0, (a, b) => a + b)
+  reduce([1, 2, 3, 4, 5], 1, (a, b) => a * b)
+  reduce([1, 2, 3, 4, 5], -Infinity, Math.max)
+
+  // 找最大值的reduce方法(2)
+  var nums = [5, 9, 1, 3, 7]
+  var max = nums.reduce((acc, curr) => (curr > acc ? curr : acc))
+  console.log(max)
+
+  // 扁平化二维数组
+  var array = [[1, 2], [3, 4], [5]]
+  var flat = array.reduce((acc, curr) => acc.concat(curr), [])
+  console.log(flat)
+
+  // 统计元素出现的次数
+  var fruits = ['apple', 'banana', 'apple', 'orange', 'banana', 'apple']
+  var count = fruits.reduce((acc, fruit) => {
+    acc[fruit] = (acc[fruit] || 0) + 1
+    return acc
+  }, {})
+  console.log(count)
+
+  var result = 0
+  for (var i = 0; i < array.length; i++) {
+    result = result + array[i]
+  }
+  console.log(result)
+
+  var result = 1
+  for (var i = 0; i < array.length; i++) {
+    result = result * array[i]
+  }
+  console.log(result)
+
+  var result = -Infinity
+  for (var i = 0; i < array.length; i++) {
+    result = result * array[i]
+    result = Math.result(result, array[i])
+    result = result > array[i] ? result : array[i]
+  }
+  console.log(max)
+
+  // 计算某个名为name的人有多少基因来自PvH
+  // byName[name] -> person
+  function computerDNA(name) {
+    var p = byName[name]
+    if (p == null) {
+      return 0
+    }
+    if (p.name == 'Pauwels van Haverbeke') {
+      return 1
+    }
+    var f = computerDNA(p.father)
+    var m = computerDNA(p.mother)
+    return (f + m) / 2
+  }
+
+  // 以上代码相似
+  function c(p, func, defaultValue) {
+    function computer(p) {
+      if (p = null) {
+        return defaultValue
+      }
+      return func(p, computer(byName[p.father]), computer(byName[p.mother]))
+    }
+    return computer(p)
+  }
+  // 跟下面代码一样
+  function reduceAncestors(person, f, defaultValue) {
+    function valueFor(person) {
+      if (person == null) {
+        return defaultValue
+      } else {
+        return f(person, valueFor(byName[person.mother]), valueFor(byName[person.father]))
+      }
+    }
+    return valueFor(person)
+  }
+
+  // 根据以上代码计算出他们的所谓基因匹配程度
+  reduceAncestors(byName['Philibert Haverbeke'], (p, v1, v2) => {
+    if (p.name == 'Pauwels van Haverbeke') {
+      return 1
+    }
+    return (v1 + v2) / 2
+  }, 0)
+
+  // 算出Philibert Haverbeke及其祖先所有人的寿命之和
+  reduceAncestors(byName['Philibert Haverbeke'], (p, v1, v2) => {
+    return (v1 + v2) + (p.died - p.born)
+  }, 0)
+
+  // 用reduce来实现map
+  // 利用reduce来建立一个更高级的抽象
+  function map(array, transform) {
+    return array.reduce((result, item, i, array) => {
+      result.push(transform(item, i, array))
+      return result
+    }, [])
+  }
+
+  // 数出array数组中满足test条件的元素有多少个
+  // 基于一个现有的抽象实现另外一个抽象
+  function count(array, test) {
+    return array.filter(test).length
+  }
+
+  function deepEqual(val1, val2) {
+    if (val1 && val2 && typeof val1 == 'object' && typeof val2 == 'object') {
+      for (var key in val1) {
+        if (!deepEqual(val1[key], val2[key])) {
+          return false
+        }
+      }
+      for (var key in val2) {
+        if (!deepEqual(val1[key], val2[key])) {
+          return false
+        }
+      }
+      return true
+    }
+    return val1 === val2
+  }
+
+  // 优化
+  function deepEqual(val1, val2) {
+    if (val1 && val2 && typeof val1 == 'object' && typeof val2 == 'object') {
+      if (Array.isArray(val1) && Array.isArray(val2) || !Array.isArray(val1) && !Array.isArray(val2)) {
+        var c = 0
+        for (var key in val1) {
+          c++
+        }
+        for (var key in val2) {
+          c--
+        }
+        if (c !== 0) {
+          return false
+        }
+        for (var key in val1) {
+          if (!(key in val2) || !deepEqual(val1[key], val2[key])) {
+            return false
+          }
+        }
+        return true
+      } else {
+        return false
+      }
+    }
+    return val1 === val2
+  }
+</script>

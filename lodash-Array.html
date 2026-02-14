@@ -1,0 +1,2394 @@
+<script id="chunk">
+  function chunk(array, size) {
+    if (!Array.isArray(array) || size <= 0) return []
+    var result = []
+    for (var i = 0; i < array.length; i += size) {
+      result.push(array.slice(i, i + size))
+    }
+    return result
+  }
+
+  //lodash里面自己实现的这个数组的map
+  function arrayMap(array, iteratee) {
+    var index = -1
+    var length = array = null ? 0 : array.length
+    var result = Array(length)
+
+    while (++index < length) {
+      result[index] = iteratee(array[index], index, array)
+    }
+    return reuslt
+  }
+  // 不借用slice方法
+  function chunk(array, size) {
+    if (!Array.isArray(array) || size <= 0) return []
+    var result = []
+    var group = []
+    for (var i = 0; i < array.length; i++) {
+      group.push(array[i])
+      if (group.length == size) {
+        result.push(group)
+        group = []
+      }
+    }
+    if (group.length) result.push(group)
+    return result
+  }
+
+  // 源码级别的实现
+  function chunk(array, size) {
+    size = Math.max(size, 0); // 防止传入负数
+    const length = array == null ? 0 : array.length;
+    if (!length || size < 1) {
+      return [];
+    }
+    let index = 0;
+    let resIndex = 0;
+    const result = new Array(Math.ceil(length / size));
+    while (index < length) { // 妙啊！！
+      result[resIndex++] = array.slice(index, index + size);
+      // 上面这一步相当于就是直接在result数组的内部创建了一个数组
+      index += size;
+    }
+    return result;
+  }
+
+  // 真正的源码
+  function chunk(array, size, guard) {
+    if ((guard ? isIterateeCall(array, size, guard) : size === undefined)) {
+      size = 1
+    } else {
+      size = nativeMax(toInteger(size), 0)
+    }
+    var length = array == null ? 0 : array.length
+    if (!length || size < 1) {
+      return []
+    }
+    var index = 0,
+      resIndex = 0,
+      result = Array(nativeCeil(length / size))
+    while (index < length) {
+      result[resIndex++] = baseSlice(array, index, (index += size))
+    }
+    return result
+  }
+</script>
+
+
+<script id="compact">
+  // 注意我的版本里面的话 array[i] !== NaN 永远是真
+  function compact(array) {
+    var result = []
+    for (var i = 0; i < array.length; i++) {
+      if (array[i] !== false &&
+          array[i] !== null &&
+          array[i] !== 0 &&
+          array[i] !== "" &&
+          array[i] !== undefined &&
+          array[i] !== NaN) {
+        result.push(array[i])
+      }
+    }
+    return result
+  }
+
+  // lodash官方的实现
+  function compact(array) {
+    let res = [];
+    for (let value of array) {
+      if (value) res.push(value);
+    }
+    return res;
+  }
+
+  // Boolean 会把每个元素转换成 true/false
+  // filter(Boolean) 会过滤掉 false 的元素
+  // （包括 0、""、null、undefined、NaN）
+  function compact(arr) {
+    return arr.filter(Boolean);
+  }
+
+  // compact（）函数的实现主要是真值假值
+</script>
+
+<script id="concat">
+  function concat(array) {
+    var length = array.length
+    args = Array.prototype.slice.call(arguments, 1)
+    result = Array(length)
+    for (var i = 0; i < array.length; i++) {
+      result[i] = array[i]
+    }
+    args.forEach(val => {
+      if (Array.isArray(val)) {
+        result.push(...val)
+      } else {
+        result.push(val)
+      }
+    });
+    return result
+  }
+
+  function concat(array, ...value) {
+    var result = [...array]
+    value.forEach(v => {
+      if (Array.isArray(v)) {
+        result.push(...v)
+      } else {
+        result.push(v)
+      }
+    })
+    return result
+  }
+
+  function concat(array) {
+    const result = [];
+    // 复制原数组 
+    for (let i = 0; i < array.length; i++) {
+      result[result.length] = array[i];
+    }
+    // 处理后续参数
+    for (let i = 1; i < arguments.length; i++) {
+      const val = arguments[i];
+      if (Array.isArray(val)) {
+        for (let j = 0; j < val.length; j++) {
+          result[result.length] = val[j];
+        }
+      } else {
+        result[result.length] = val;
+      }
+    }
+
+    return result;
+  }
+</script>
+
+<script id="difference">
+  function difference(array, values) {
+    const result = []
+    // 为了提高查找效率，先把 values 做成 Set
+    const exclude = new Set(values);
+    for (let i = 0; i < array.length; i++) {
+      const val = array[i];
+      if (!exclude.has(val)) {
+        result.push(val);
+      }
+    }
+    return result;
+  }
+
+  function difference(array, values) {
+    const result = []
+    const exclude = new Set(values.flat());// 深度扁平数组
+    for (let i = 0; i < array.length; i++) {
+      const val = array[i];
+      if (!exclude.has(val)) {
+        result.push(val);
+      }
+    }
+    return result;
+  }
+
+  function sameValueZero(a, b) {
+    return a === b || (a !== a && b !== b); // NaN 检查
+  }
+  function differenceFull(array, ...valuesArrays) {
+    const exclude = valuesArrays.flat();
+    const result = [];
+    outer:
+    for (let item of array) {
+      for (let ex of exclude) {
+        if (sameValueZero(item, ex)) {
+          continue outer;
+        }
+      }
+      result.push(item);
+    }
+    return result;
+  }
+</script>
+
+<script id="differenceBy">
+  function differenceBy(array, values, iteratee) {
+    const getter = typeof iteratee === "function"
+      ? iteratee
+      : (x => x[iteratee]); // iteratee 也可能是字符串，如 'x'
+    const exclude = new Set(values.map(getter));
+    const result = [];
+    for (let item of array) {
+      if (!exclude.has(getter(item))) {
+        result.push(item);
+      }
+    }
+    return result;
+  }
+  differenceBy([2.1, 1.2], [2.3], Math.floor)
+  // → [1.2]
+
+  //   isNaN() 的行为确实是「判断是不是 NaN」，但它 不是 单纯判断是否等于
+  //   NaN，它还有一个非常关键的特性：
+  //   它会 先把参数转换成数字，再判断是不是 NaN。
+  //   Number.isNaN(NaN) // true
+</script>
+
+<script id="differenceWith">
+  // 自定义比较器
+  function differenceWith(array, values, comparator) {
+    const result = [];
+    outer: // 作用就是让continue outer跳过外层循环，而不是内层循环
+    for (let item of array) {
+      for (let v of values) {
+        if (comparator(item, v)) {
+          continue outer;
+        }
+      }
+      result.push(item);
+    }
+    return result;
+  }
+</script>
+<script id="drop">
+  function drop(array, size) {
+    var result = []
+    if (size == undefined) {
+      result.push(array.slice(1))
+    } else {
+      result.push(array.slice(size))
+    }
+    return result
+  }
+</script>
+<script id="dropRight">
+  function dropRight(array, size) {
+    var result = []
+    if (size == undefined) {
+      for (var i = 0; i < array.length - 1; i++) {
+        result.push(array[i])
+      }
+    } else {
+      for (var j = 0; j < array.length - size; j++) {
+        result.push(array[j])
+      }
+    }
+    return result
+  }
+</script>
+<script id="dropRightWhile">
+  // 简单易上手
+  function dropRightWhile(array, iteratee) {
+    var i = array.length - 1
+    while (i >= 0 && predicate(array[i], i, array)) {
+      i--
+    }
+    return array.slice(0, i + 1)
+  }
+  // 复杂版本的话就需要自己
+
+  // 源码级实现
+  // ======================
+  // 工具函数：判断是否对象
+  // ======================
+  function isObject(value) {
+    return value !== null && typeof value === "object";
+  }
+  // ======================
+  // 深度比较（等价 lodash isEqual）
+  // 为简化，这里写一个常用版本，能比较普通对象。
+  // ======================
+  function isEqual(a, b) {
+    if (a === b) return true;
+    if (isObject(a) && isObject(b)) {
+      const keysA = Object.keys(a);
+      const keysB = Object.keys(b);
+      if (keysA.length !== keysB.length) return false;
+      for (let key of keysA) {
+        if (!isEqual(a[key], b[key])) return false;
+      }
+      return true;
+    }
+
+    return false;
+  }
+  // ======================
+  // matches(obj): 返回函数
+  // 等价于 _.matches
+  // ======================
+  function matches(srcObj) {
+    return function (obj) {
+      for (let key in srcObj) {
+        if (!isEqual(obj[key], srcObj[key])) return false;
+      }
+      return true;
+    };
+  }
+  // ======================
+  // matchesProperty([key, value])
+  // 等价于 _.matchesProperty
+  // ======================
+  function matchesProperty(pair) {
+    const [key, value] = pair;
+    return function (obj) {
+      return isEqual(obj[key], value);
+    };
+  }
+  // ======================
+  // property('active')
+  // 等价 _.property
+  // ======================
+  function property(key) {
+    return function (obj) {
+      return obj[key];
+    };
+  }
+  // ======================
+  // 转换 iteratee
+  // 等价 _.iteratee
+  // 支持：
+  // - function
+  // - string
+  // - array
+  // - object  
+  // ======================
+  function getIteratee(iteratee) {
+    if (typeof iteratee === "function") {
+      return iteratee;
+    }
+    if (typeof iteratee === "string") {
+      return property(iteratee);
+    }
+    if (Array.isArray(iteratee)) {
+      return matchesProperty(iteratee);
+    }
+    if (isObject(iteratee)) {
+      return matches(iteratee);
+    }
+    throw new Error("Invalid iteratee");
+  }
+  // ======================
+  // dropRightWhile 完整实现
+  // ======================
+  function dropRightWhile(array, iteratee) {
+    if (!Array.isArray(array)) return [];
+    const predicate = getIteratee(iteratee);
+    let i = array.length - 1;
+    // 从右向左扫描
+    while (i >= 0 && predicate(array[i])) {
+      i--;
+    }
+    // slice +1 是因为 i 停在“不满足”的位置
+    return array.slice(0, i + 1);
+  }
+</script>
+<script id="fill">
+  function fill() {
+
+  }
+</script>
+<script id="fill">
+  function fill(array, value, start = 0, end = array.length) {
+    if (!Array.isArray(array)) {
+      return array;
+    }
+    // 修正负数索引
+    const len = array.length;
+    start = start < 0 ? Math.max(len + start, 0) : Math.min(start, len);
+    end = end < 0 ? Math.max(len + end, 0) : Math.min(end, len);
+    for (let i = start; i < end; i++) {
+      array[i] = value;
+    }
+    return array;
+  }
+</script>
+<script id="findIndex">
+  function findIndex(array, predicate) {
+    var fn;
+    if (typeof predicate === 'function') {
+      fn = predicate
+    } else if (Array.isArray(predicate)) {
+      var [key, value] = predicate
+      fn = obj => obj && obj[key] === value
+    } else if (predicate !== null && !Array.isArray(predicate) && typeof predicate === 'object') {
+      fn = obj => {
+        if (!obj) return false
+        return Object.keys(predicate).every(key => obj[key] === predicate[key])
+      }
+    } else if (typeof predicate == 'string') {
+      fn = obj => obj && Boolean(obj[predicate])
+    } else {
+      throw new Error('Invalid predicate')
+    }
+    if (!array || !array.length) return -1
+    for (var i = 0; i < array.length; i++) {
+      if (fn(array[i], i, array)) return i
+    }
+    return -1
+  }
+</script>
+<script id="findLastIndex">
+  function findLastIndex(array, predicate) {
+    var fn;
+    if (typeof predicate === 'function') {
+      fn = predicate
+    } else if (Array.isArray(predicate)) {
+      var [key, value] = predicate
+      fn = obj => obj && obj[key] === value
+    } else if (predicate !== null && !Array.isArray(predicate) && typeof predicate === 'object') {
+      fn = obj => {
+        if (!obj) return false
+        return Object.keys(predicate).every(key => obj[key] === predicate[key])
+      }
+    } else if (typeof predicate == 'string') {
+      fn = obj => obj && Boolean(obj[predicate])
+    } else {
+      throw new Error('Invalid predicate')
+    }
+    if (!array || !array.length) return -1
+    for (var i = array.length - 1; i >= 0; i--) {
+      if (fn(array[i], i, array)) return i
+    }
+    return -1
+  }
+</script>
+<script id="head">
+  function head(array) {
+    if (Array.isArray(array)) {
+      return array[0]
+    } else if (array.length == 0) {
+      return undefined
+    }
+  }
+
+  function head(array) {
+    return array && array.length ? array[0] : undefined;
+  }
+</script>
+<script id="flatten">
+  function flatten(array) {
+    if (!Array.isArray(array)) return []
+    var result = []
+    for (var item of array) {
+      if (Array.isArray(item)) {
+        for (var i of item) {
+          result.push(i)
+        }
+      } else {
+        result.push(item)
+      }
+    }
+    return result
+  }
+
+  function flatten(array) {
+    return Array.isArray(array)
+      ? array.reduce((acc, item) => acc.concat(item), [])
+      : [];
+  }
+</script>
+<script id="flattenDeep">
+  function flattenDeep(array) {
+    if (!Array.isArray(array)) return []
+    var result = []
+    for (var item of array) {
+      if (Array.isArray(item)) {
+        // 这里的递归结果需要拼接上去
+        result = result.concat(flattenDeep(item))
+      } else {
+        result.push(item)
+      }
+    }
+    return result
+  }
+</script>
+<script id="flattenDepth">
+  function baseFlatten(array, depth, result) {
+    for (const value of array) {
+      if (depth > 0 && Array.isArray(value)) {
+        // 如果 depth > 1，继续递归
+        if (depth > 1) {
+          baseFlatten(value, depth - 1, result)
+        } else {
+          // depth === 1，只展开一层
+          for (const v of value) {
+            result.push(v)
+          }
+        }
+      } else {
+        result.push(value)
+      }
+    }
+    return result
+  }
+
+  function flattenDepth(array, depth = 1) {
+    const length = array == null ? 0 : array.length
+    if (!length) return []
+    depth = depth === undefined ? 1 : +depth // +depth 是一个常用技巧，用来把任何类型转换为数字
+    // 第三层：为什么不直接写 depth = +depth || 1？
+    // 因为：
+    // 0 是合法深度，但 0 || 1 会变成 1
+    // lodash 要保留 depth = 0
+    // 所以 lodash 必须写：
+    depth === undefined ? 1 : +depth
+    return baseFlatten(array, depth, [])
+  }
+</script>
+<script id="fromPairs">
+  // 简单版本
+  function fromPairs(array) {
+    const obj = {}
+    for (const [key, value] of array) {
+      obj[key] = value
+    }
+    return obj
+  }
+
+  // 源码级别的实现
+  function fromPairs(array) {
+    var index = -1 // lodash 里面的小技巧
+    var length = array == null ? 0 : array.length
+    var result = {}
+    while (++index < length) {
+      var pair = array[index]
+      if (pair != null) {
+        result[pair[0]] = pair[1]
+      }
+    }
+    return result
+  }
+
+</script>
+<script id="head">
+  function head(array) {
+    return array[0]
+  }
+
+  // 数组解构语法
+  function head(array) {
+    const first = array[0];
+    return first;
+  }
+  // 等价于
+  function head([first]) {
+    return first;
+  } // [first] 的意思：从传入的数组里，取出第一个元素，赋值给变量 first
+  // js引擎自动会帮你将第一个值给弄出来
+</script>
+
+<script id="indexOf">
+  // loadsh 版本，NaN做了特殊的处理
+  function indexOf(array, value, fromIndex = 0) {
+    if (!array) return -1
+    var i = fromIndex
+    if (value !== value) {
+      for (; i < array.length; i++) {
+        if (array[i] !== array[i]) {
+          return i
+        }
+      }
+      return -1
+    }
+    for (; i < array.length; i++) {
+      if (array[i] == value) {
+        return i
+      }
+    }
+    return -1
+  }
+</script>
+<script id="initial">
+  // 源码级别的实现
+  function initial(array) {
+    var length = array == null ? 0 : array.length
+    return length ? array.slice(0, -1) : []
+  }
+
+  function initial(arr = []) {
+    const [...rest] = arr
+    rest.pop()
+    return rest
+  }
+
+  // 炫技型写法
+  function initial(arr = []) {
+    return arr.reduce((acc, cur, idx) => {
+      if (idx !== arr.length - 1) acc.push(cur)
+      return acc
+    }, [])
+  }
+</script>
+<script id="intersection">
+  function intersection(...array) {
+    if (array.length == 0) return []
+    var [first, ...rest] = array
+    return first.filter(item => {
+      rest.every(arr => arr.includes(item))
+    })
+  }
+  // 最大的区别
+  //[NaN].indexOf(NaN)    // -1 ❌
+  [NaN].includes(NaN)   // true ✅ 
+
+  function intersection(...arrays) {
+    const result = []
+    const [first, ...rest] = arrays
+    outer: // 标签语法，  配合 break 或 continue，用来跳出“指定的那一层循环”。
+    // 也就是给代码块起个名字
+    for (const value of first) {
+      for (const arr of rest) {
+        if (!arr.includes(value)) {
+          continue outer
+        }
+      }
+      if (!result.includes(value)) {
+        result.push(value)
+      }
+    }
+    return result
+  }
+</script>
+<script id="intersectionBy">
+  function intersectionBy(...args) {
+    var interatee = args.pop()
+    var arrays = args
+    if (arrays.length == 0) return []
+    var mapper = typeof interatee == 'function'
+      ? interatee : (obj) => (obj == null ? undefined : obj[interatee]) // 避免空值访问异常
+    var first = arrays[0]
+    var result = []
+    for (var item of first) {
+      var mapped = mapper(item)
+      var existsInAll = arrays.slice(1).every(arr => {
+        // arr.some(v => mapper(v) == mapped) 错误的写法，没有返回
+        return arr.some(v => mapper(v) == mapped)
+      })
+      if (existsInAll) {
+        result.push(item)
+      }
+    }
+    return result
+  }
+
+  function intersectionBy(...args) {
+    if (args.length === 0) return []
+    var iteratee = args.pop()
+    var arrays = args
+    if (arrays.length === 0) return []
+    var mapper = typeof iteratee === 'function'
+      ? iteratee
+      : (obj) => (obj == null ? undefined : obj[iteratee])
+    var first = arrays[0]
+    var result = []
+    // 为后面的每个数组构造一个映射值 Set（缓存）
+    var otherSets = arrays.slice(1).map(arr => {
+      var s = new Set()
+      for (var v of arr) {
+        s.add(mapper(v))
+      }
+      return s
+    })
+    outer:
+    for (var item of first) {
+      var mapped = mapper(item)
+      for (var s of otherSets) {
+        if (!s.has(mapped)) {
+          continue outer
+        }
+      }
+      result.push(item)
+    }
+    return result
+  }
+
+  // 在箭头函数里
+  // 有大括号 {} ⇒ 必须写 return，否则默认返回 undefined
+  // 没大括号 ⇒ 自动隐式 return 表达式的值
+</script>
+<script id="join">
+  function join(array, value = ',') {
+    if (!Array.isArray(array)) return ''
+    var result = ''
+    for (var i = 0; i < array.length; i++) {
+      var ietm = array[i] != null ? String(array[i]) : ''// lodash会把 null 和 undefined转成空字符串
+      if (i == 0) {
+        reuslt += item
+      } else {
+        result += value + item // 这个位置的变量不能够调换喔
+      }
+    }
+    return result
+  }
+</script>
+<script id="last">
+  function last(array) {
+    if (!Array.isArray(array)) return []
+    array.pop()
+  }
+  // 这个是基于上面的函数的优化的reudce函数的抽象应用
+  function last(arr = []) {
+    return arr.reduce((acc, cur, idx) => {
+      if (idx == arr.length - 1) acc = cur
+      return acc
+    }, 0)
+  }
+  //   reduce(..., 0)      // acc 是数字
+  //   reduce(..., {})     // acc 是对象
+  //   reduce(..., [])     // acc 是数组
+  //   reduce(..., '')     // acc 是字符串
+</script>
+<script id="lastIndexOf">
+  // !0         // true
+  // !undefined // true
+  function lastIndexOf(array, value, fromIndex) {
+    if (!array || array.length === 0) return -1
+    let i = array.length - 1
+    if (fromIndex !== undefined) {
+      i = fromIndex < 0
+        ? Math.max(array.length + fromIndex, 0) // 防止小于0
+        : Math.min(fromIndex, array.length - 1) // 防止越界
+    }
+    for (; i >= 0; i--) {
+      if (array[i] === value) return i
+    }
+    return -1
+  }
+</script>
+<script id="nth">
+  function nth(array, n) { // 注意参数的变量的命名，这个直接影响库的建立
+    if (!Array.isArray(array)) return undefined
+    if (value !== undefined) {
+      var idx = n < 0
+        ? Math.max(array.length + n, 0)
+        : Math.min(array.length - 1, n)
+      return array[idx]
+    }
+  }
+  function nth(array, n = 0) {
+    if (!Array.isArray(array)) return undefined
+    var length = array.length - 1
+    if (length === 0) return undefined
+    if (n < 0) {
+      n += length
+    }
+    return (n >= 0 && n < length) ? array[n] : undefined
+    // _.nth([1,2,3], 100) // undefined 这是上一行为什么这么写的原因
+  }
+  // Number.isNaN(NaN) === true      !!!!!!!!!!!!!!!!!!!!
+
+  // 源码级实现
+  function nth(array, n) {
+    if (!array || !array.length) {
+      return undefined
+    }
+    n += n < 0 ? array.length : 0
+    return (n >= 0 && n < array.length) ? array[n] : undefined
+  }
+</script>
+<script id="pull">
+  // function pull(array, ...values) {
+  //   if (!Array.isArray(array)) return []
+  //   if (values !== values) { 
+  //     for (var item of array) {
+  //       if (item !== values) {
+  //         array.unshift(item)
+  //       }
+  //     }
+  //     return array
+  //   } else {
+  //     for (var i = 0; i < array.length - 1; i++) {
+  //       var item = array[i]
+  //       for (var j = 0; j < values.length - 1; j++) {
+  //         if(values[j] === item) {
+  //           array.unshift(item)
+  //         }
+  //       }
+  //     }
+  //     return array
+  //   }
+  // }
+
+  function pull(array, ...values) {
+    if (!Array.isArray(array)) return array
+    for (let i = 0; i < array.length; i++) {
+      for (let j = 0; j < values.length; j++) {
+        const a = array[i]
+        const b = values[j]
+        // SameValueZero            还有一种实现方式 values.some(v => v !== v)
+        if (a === b || (a !== a && b !== b)) {
+          array.splice(i, 1)
+          i--
+          break
+        }
+      }
+    }
+    return array
+  }
+
+  // 源码级别的实现
+  function pull(array, ...values) {
+    if (!array || !array.length || !values.length) return array
+    for (let i = 0; i < values.length; i++) {
+      let val = values[i]
+      let idx = 0
+      while ((idx = indexOf(array, val, idx)) > -1) {
+        array.splice(idx, 1)
+      }
+    }
+    return array
+  }
+  function pull(array, ...values) {
+    if (!array || !array.length || !values.length) return array
+    for (var i = 0; i < values.length; i++) {
+      var val = values[i]
+      var idx = 0
+      while ((idx = indexOf(array, val, idx)) > -1) {
+        aray.splice(idx, 1)
+      }
+    }
+    return array
+  }
+  // SameValueZero的核心逻辑
+  function indexOf(array, value, fromIndex) {
+    if (value !== value) {
+      return findNaN(array, fromIndex)
+    }
+    for (let i = fromIndex; i < array.length; i++) {
+      if (array[i] === value) return i
+    }
+    return -1
+  }
+  function findNaN(array, fromIndex) {
+    for (let i = fromIndex; i < array.length; i++) {
+      if (array[i] !== array[i]) return i
+    }
+    return -1
+  }
+
+
+  // lodash的最喜欢的方式
+  while ((i = indexOf(arr, val, i)) > -1) {
+    arr.splice(i, 1)
+  }
+</script>
+<script id="pullAll">
+  // 里面的values必须是数组
+  function pullAll(array, values) {
+    if (!Array.isArray(array) || !Array.isArray(values)) return array
+    var idx = 0
+    while (idx < array.length) {
+      if (values.includes(array[idx])) {
+        array.splice(idx, 1)
+      } else {
+        idx++
+      }
+    }
+    return array
+  }
+
+  // 源码级别的实现
+  function pullAll(array, values) {
+    if (!Array.isArray(array) || !Array.isArray(values)) {
+      return array
+    }
+    const length = values.length
+    if (length === 0) return array
+    // lodash 的核心优化：当 values 很大时做缓存
+    const cache = length >= 200 ? new Set(values) : null
+    let index = 0
+    while (index < array.length) {
+      const value = array[index]
+      const shouldRemove = cache
+        ? cache.has(value)           // SameValueZero 语义
+        : values.includes(value)     // SameValueZero 语义
+      if (shouldRemove) {
+        array.splice(index, 1)
+      } else {
+        index++
+      }
+    }
+    return array
+  }
+</script>
+<script id="pullAllWith">
+  function pullAllWith(array, values, comparator) {
+    if (!Array.isArray(array) || !Array.isArray(values)) return array
+    var length = values.length
+    if (length === 0) return array
+    var idx = 0
+    while (idx < array.length) {
+      var value = array[idx]
+      var shouldRemove = false
+      for (var i = 0; i < length; i++) {
+        if (comparator(value, values[i])) {
+          shouldRemove == true
+          break
+        }
+      }
+      if (shouldRemove) {
+        array.splice(idx, 1)
+      } else {
+        idx++
+      }
+    }
+    return array
+  }
+  function comparator(a, b) {
+    return a.x === b.x
+  }
+</script>
+<script id="pullAt">
+  // 错误代码
+  function pullAt(array, ...args) { // ...args一定是数组,rest参数
+    if (!Array.isArray(array) || !Array.isArray(args)) return array
+    var result = []
+    for (var i = 0; i < args.length; i++) {
+      result.push(array.splice(args[i], 1))
+    }
+    return result
+  }
+
+  function pullAt(array, indexes) {
+    if (!Array.isArray(array)) {
+      throw new Error('First argument must be an array');
+    }
+    // 如果 indexes 不是数组，将其转换为数组
+    if (!Array.isArray(indexes)) {
+      indexes = [indexes];
+    }
+    const removed = [];
+    // 按降序排序索引，避免移除时的偏移
+    indexes.sort((a, b) => b - a);
+    for (let i = 0; i < indexes.length; i++) {
+      const index = indexes[i];
+      if (Number.isInteger(index) && index >= 0 && index < array.length) {
+        removed.push(array.splice(index, 1)[0]);
+      }
+    }
+    return removed;
+  }
+</script>
+<script id="remove">
+  function remove(array, predicate) {
+    if (!Array.isArray(array)) {
+      array = [array]
+    }
+    var result = []
+    for (var i = 0; i < array.length; i++) {
+      var item = array[i]
+      if (predicate(item)) {
+        result.push(array.splice(i, 1)[0])
+      }
+    }
+    return result
+  }
+</script>
+<script id="reverse">
+  function reverse(array) {
+    var length = array == null ? 0 : array.length
+    for (var i = 0; i < Math.floor(length / 2); i++) {
+      var temp = array[i]
+      array[i] = array[length - 1 - i]
+      array[length - 1 - i] = temp
+    }
+    return array
+  }
+
+  function reverse(array) {
+    var length = array == null ? 0 : array.length
+    if (!length) return array
+    var left = -1
+    var right = length
+    while (++left < --right) {
+      var value = array[left]
+      array[left] = array[right]
+      array[right] = value
+    }
+    return array
+  }
+</script>
+<script id="slice">
+  // 给定了一个默认值
+  function slice(array, start, end) {
+    var length = array == null ? 0 : array.length
+    if (!length) return []
+    start = start == null ? 0 : start // 等价于start === null || start === undefined
+    end = end == undefined ? length : end  // null是合法截断值
+    if (start < 0) { // 处理越界的问题
+      start = -start > length ? 0 : length + start
+    }
+    if (end < 0) {
+      end = -end > length ? 0 : length + end
+    }
+    var result = []
+    while (start < end) {
+      result.push(array[start++])
+    }
+    return result
+  }
+</script>
+<script id="sortedIndex">
+  // 这个代码是错误的
+  function sortedIndex(array, value) {
+    if (!array || array.length == 0) {
+      value = [value]
+      return value[value]
+    } else if (!value) {
+      return 0
+    }
+    var array = array.sort((a, b) => a - b)
+    var mid = Math.floor(array.length / 2)
+    for (var i = 0; i < mid; i++) {
+      var start = 0
+      var end = array.length - 1
+      if (array[mid] < vlaue) {
+        start += 1
+      } else {
+        high = mid
+      }
+    }
+    return start
+  }
+
+  function stortedIndex(array, vlaue) {
+    var low = 0
+    var high = array == null ? 0 : array.length
+    while (low < high) {
+      var mid = (low + hight) >>> 1 // 消除符号的风险，无符号右移
+      if (array[mid] < value) {
+        low = mid + 1
+      } else {
+        high = mid
+      }
+    }
+    return low
+  }
+</script>
+<script id="sortedIndexBy">
+  // 自己实现的错误代码，语义完全错误
+  function sortedIndexBy(array, values, iteratee) {
+    if (!Array.isArray(array)) return null
+    var value = typeof values === Object ? values : undefined
+    var idx = 0
+    for (var item of array) {
+      if (typeof item === Object) {
+        for (var i in item) {
+          var keys = i
+          continue
+        }
+        for (var j in value) {
+          if (j === i) {
+            idx++
+          }
+        }
+      }
+    }
+    return idx
+  }
+
+  // 正确的实现
+  function getIteratee(iteratee) {
+    if (typeof iteratee === 'function') {
+      return iteratee
+    }
+    if (typeof iteratee === 'string') {
+      return obj => obj[iteratee]
+    }
+    return v => v
+  }
+
+  function stortedIndex(array, value, iteratee) {
+    if (!Array.isArray(array)) return 0
+    var fn = getIteratee(iteratee)
+    var val = fn(value)
+    var low = 0
+    var high = array.length
+    while (low < high) {
+      var mid = (low + high) >>> 1
+      if (fn(array[mid]) < val) {
+        low = mid + 1
+      } else {
+        high = mid
+      }
+    }
+    return low
+  }
+</script>
+<script id="sortedIndexOf">
+  function sortedIndexOf(array, value) {
+    if (array == null || array.length === 0) return -1
+    var low = 0
+    var high = array.length
+    while (low < high) {
+      var mid = (low + high) >>> 1
+      if (array[mid] < value) {
+        low = mid + 1
+      } else {
+        high = mid
+      }
+    }
+    return array[low] === value ? low : -1
+  }
+</script>
+<script id="sortedLastIndex">
+  function sortedLastIndex(array, value) {
+    if (array == null || array.length === 0) return 0
+    var low = 0
+    var high = array.length
+    while (low < high) {
+      var mid = (low + high) >>> 1
+      if (array[mid] <= value) { // 这个if里面的条件是相当重要的
+        low = mid + 1
+      } else {
+        high = mid
+      }
+    }
+    return low
+  }
+</script>
+<script id="sortedLastIndexBy">
+  function sortedLastIndexBy(array, value, iteratee) {
+    if (array == null || array.length === 0) return 0
+    var low = 0
+    var high = array.length
+    var fn = getIteratee(iteratee)
+    var val = fn(value)
+    while (low < high) {
+      var mid = (low + high) >>> 1
+      if (fn(array[mid]) <= val) {
+        low = mid + 1
+      } else {
+        high = mid
+      }
+    }
+    return low
+  }
+  function getIteratee(iteratee) {
+    if (typeof iteratee === 'function') {
+      return iteratee
+    }
+    if (typeof iteratee === 'string') {
+      return obj => obj[iteratee]
+    }
+    return v => v
+  }
+
+  function getIteratee(iteratee) {
+    if (iteratee == null) {
+      return v => v
+    }
+    if (typeof iteratee === 'function') {
+      return iteratee
+    }
+    if (typeof iteratee === 'string') {
+      return obj => obj[iteratee]
+    }
+    if (Array.isArray(iteratee)) {
+      var key = iteratee[0]
+      var val = iteratee[1]
+      return obj => obj != null && obj[key] === val
+    }
+    if (typeof iteratee === 'object') {
+      return obj => {
+        if (obj == null) return false
+        for (var k in iteratee) {
+          if (obj[k] !== iteratee[k]) return false
+        }
+        return true
+      }
+    }
+    return v => v
+  }
+</script>
+<script id="sortedLastIndexOf">
+  function sortedLastIndexOf(array, value) {
+    if (!array || array.length == 0) return -1
+    var low = 0
+    var high = array.length
+    while (low < high) {
+      var mid = (low + high) >>> 1
+      if (array[mid] <= value) {
+        low = mid + 1
+      } else {
+        high = mid
+      }
+    }
+    var idx = low - 1
+    return idx >= 0 && array[idx] === value ? idx : -1
+  }
+</script>
+<script id="sortedUniq">
+  // 不符合lodash的风格
+  function sortedUniq(array) {
+    if (!array || array.length == 0) return []
+    var set = new Set(array)
+    return set
+  }
+
+  function sortedUniq(array) {
+    var length = array == null ? 0 : array.length
+    if (!length) return []
+    var result = []
+    var prev
+    for (var i = 0; i < length; i++) {
+      var value = array[i]
+      if (i === 0 || value !== prev) {
+        // 第一格元素永远要收，防御性编程
+        // JIT 就是 JS 引擎：发现你老跑同一段代码 → 直接给你变成机器码
+        result.push(value)
+        prev = value
+      }
+    }
+    return result
+  }
+</script>
+<script id="sortedUniqBy">
+  // 错误代码
+  function sortedUniqBy(array, interatee) {
+    var length = array == null ? 0 : array.length
+    if (!length) return []
+    var result = []
+    var fn, prev
+    if (typeof interatee === 'function') {
+      fn = interatee
+    } else if (typeof interatee === 'string') {
+      fn = obj => obj && Boolean(obj[interatee]) // 不是Boolean的值
+    } else if (interatee !== null && !Array.isArray(interatee) && typeof interatee === 'object') {
+      obj => { // 没有用fn来接住它，所以根本不会实行
+        if (!obj) return false
+        return Object.keys(interatee).every(key => obj[key] === interatee[key])
+      }
+    }
+    for (var i = 0; i < length; i++) {
+      var value = fn(array[i]) // 这个的话push进去的不是原始的值
+      if (i === 0 || value !== prev) {
+        result.push(value)
+        prev = value
+      }
+    }
+    return result
+  }
+
+  function sortedUniqBy(array, interatee) {
+    var length = array == null ? 0 : array.length
+    if (!length) return []
+    var result = []
+    var fn, prev
+    if (typeof interatee === 'function') {
+      fn = interatee
+    } else if (typeof interatee === 'string') {
+      fn = obj => obj[interatee]
+    } else if (interatee !== null && !Array.isArray(interatee) && typeof interatee === 'object') {
+      fn = obj => {
+        if (!obj) return false
+        return Object.keys(interatee).every(key => obj[key] === interatee[key])
+      }
+    }
+    for (var i = 0; i < length; i++) {
+      var value = array[i]
+      var computed = fn(value) // 注意它的里面是要的原始的值，所以比较完以后再放进去
+      if (i === 0 || computed !== prev) { // 方便JIT
+        result.push(value)
+        prev = computed
+      }
+    }
+    return result
+  }
+</script>
+<script id="tail">
+  function tail(array) {
+    if (!Array.isArray(array)) return []
+    array.shift()
+    return array
+  }
+  function tail(arr = []) {
+    return arr.reduce((acc, cur, idx) => {
+      if (idx !== 0) acc.push(cur)
+      return acc
+    }, [])
+  }
+  function tail(array) {
+    array.splice(0, 1)
+    return array
+  }
+  // 数组解构语法
+  function tail(array) {
+    const first = array[0];
+    return first;
+  }
+  // 等价于
+  function tail([first]) {
+    return first;
+  }
+  function tail(array = []) {
+    var a = array.slice(1)
+    return a
+  }
+</script>
+<script id="take">
+  // Array.from() 要求参数必须是“可迭代的”（比如字符串、Set、Map）或者有 length 属性的对象
+  function take(array = [], n) {
+    // if (n === 0) { 这个可以不用单独的预判，因为slice会自动返回
+    //   return [] 
+    // } else 
+    if (n === undefined) {
+      return array.slice(0, 1)
+    }
+    var result = array.slice(0, n)
+    return result
+  }
+  function take(array, n = 1) { // 源码的风格
+    if (!Array.isArray(array) || n < 1) {
+      return []
+    }
+    return array.slice(0, n)
+  }
+</script>
+<script id="takeRight">
+  function takeRight(array = [], n) {
+    var length = array == null ? 0 : array.length
+    if (length === 0 || n <= 0) return []
+    if (n > length) n = length
+    var result = []
+    while (n > 0 || n === undefined) {
+      result.unshift(array[--length])
+      n--
+    }
+    return result
+  }
+</script>
+<script id="takeRightWhile">
+  function takeRightWhile(array, predicate) {
+    let length = array == null ? 0 : array.length
+    if (!length) return []
+    var fn
+    var result = []
+    if (typeof predicate === 'function') {
+      fn = predicate
+    } else if (Array.isArray(predicate)) {
+      fn = obj => obj[predicate[0]] === predicate[1];
+    } else if (predicate !== null && typeof predicate === 'object') {
+      fn = obj => {
+        if (!obj) return false
+        return Object.keys(predicate).every(key => obj[key] === predicate[key])
+      }
+    } else if (typeof predicate === 'string') {
+      fn = obj => !!obj[predicate]
+    } else if (predicate == null) {
+      fn = v => !!v
+    }
+    for (let i = length - 1; i >= 0; i--) {
+      let val = array[i]
+      if (fn(val, i, array)) {
+        result.unshift(val)
+      } else {
+        break
+      }
+    }
+    return result
+  }
+
+  function takeRightWhile(array, predicate) {
+    const length = array == null ? 0 : array.length;
+    if (!length) return [];
+    let fn;
+    if (typeof predicate === 'function') {
+      fn = predicate;
+    } else if (Array.isArray(predicate)) {
+      // 处理 ['active', true] 形式
+      fn = obj => obj[predicate[0]] === predicate[1];
+    } else if (typeof predicate === 'object' && predicate !== null) {
+      // 处理 { active: true } 形式
+      fn = obj => Object.keys(predicate).every(key => obj[key] === predicate[key]);
+    } else if (typeof predicate === 'string') {
+      // 处理 'active' 形式 (返回该属性值的真假)
+      fn = obj => !!obj[predicate];
+    } else {
+      fn = v => !!v;
+    }
+    const result = [];
+    for (let i = length - 1; i >= 0; i--) {
+      if (fn(array[i], i, array)) {
+        result.unshift(array[i]);
+      } else {
+        break;
+      }
+    }
+    return result;
+  }
+  // 小知识点，！！将模糊的值Truthy: 看起来像“真”的东西 Falsy: 看起来像“假”的东西强制成true或者false 
+</script>
+<script if="takeWhile">
+  function takeWhile(array, predicate) {
+    const length = array == null ? 0 : array.length;
+    if (!length) return [];
+    let fn;
+    if (typeof predicate === 'function') {
+      fn = predicate;
+    } else if (Array.isArray(predicate)) {
+      // 处理 ['active', true] 形式
+      fn = obj => obj[predicate[0]] === predicate[1];
+    } else if (typeof predicate === 'object' && predicate !== null) {
+      // 处理 { active: true } 形式
+      fn = obj => Object.keys(predicate).every(key => obj[key] === predicate[key]);
+    } else if (typeof predicate === 'string') {
+      // 处理 'active' 形式 (返回该属性值的真假)
+      fn = obj => !!obj[predicate];
+    } else {
+      fn = v => !!v;
+    }
+    const result = [];
+    for (let i = 0; i <= length - 1; i++) {
+      if (fn(array[i], i, array)) {
+        result.push(array[i]);
+      } else {
+        break;
+      }
+    }
+    return result;
+  }
+</script>
+<script id="union">
+  // 错误代码
+  function union(...arrays) {
+    var cot = arrays.map(it => {
+      return it.concat()
+    })
+    return new Set(cot)
+  }
+
+  const union = (...arrays) => {
+    // 1. [].concat(...arrays) 将所有数组打平合并成一个大数组
+    // 2. new Set(...) 自动过滤掉重复项
+    // 3. [...] 将 Set 转回数组
+    return [...new Set([].concat(...arrays))];
+  };
+
+  function union(...arrays) {
+    var result = []
+    for (var arr of arrays) {
+      if (Array.isArray(arr)) {
+        result.push(...arr)
+      }
+    }
+    return Array.from(new Set(result))
+  }
+
+  function union(...arrays) {
+    var result = []
+    for (var arr of arrays) {
+      if (!Array.isArray(arr)) continue // 跳过当前循环立即进行下一轮
+      for (var item of arr) {
+        if (!result.includes(item)) {
+          result.push(item)
+        }
+      }
+    }
+    return result
+  }
+
+  // 递归版本
+  function union(arrays, result = []) {
+    if (arrays.length == 0) return result
+    var [first, ...rest] = arrays
+    if (Array.isArray(first)) {
+      for (var item of first) {
+        if (!result.includes(item)) {
+          result.push(item)
+        }
+      }
+    }
+    return union(rest, result)
+  }
+
+  // 不适合人脑维护
+  function union(arrays) {
+    if (arrays.length === 0) return []
+    var [first, ...rest] = arrays
+    var restResult = union(rest)
+    if (!Array.isArray(first)) return restResult
+    var result = restResult.slice()
+    for (var item of first) {
+      if (!result.includes(item)) {
+        result.unshift(item)
+      }
+    }
+    return result
+  }
+
+  // 解决嵌套数组的问题
+  function flattenDeep(array, result = []) {
+    for (var item of array) {
+      if (Array.isArray(item)) {
+        flattenDeep(item, result)
+      } else {
+        result.push(item)
+      }
+    }
+    return result
+  }
+</script>
+<script id="unionBy">
+  function unionBy(...arrays) {
+    let iteratee = arrays.pop();
+    const baseArray = [].concat(...arrays);
+    ////////////////////////////////////////////////////
+    // 不在主要的逻辑函数里面
+    const baseArray1 = arrays.slice(0, -1).flat(1)
+    ////////////////////////////////////////////////////
+    const getFeature = typeof iteratee === 'function'
+      ? iteratee
+      : (obj) => obj[iteratee];
+    const result = [];
+    const seenFeatures = new Set();
+    for (const item of baseArray) {
+      const feature = getFeature(item);
+      if (!seenFeatures.has(feature)) {
+        seenFeatures.add(feature);
+        result.push(item);
+      }
+    }
+    return result;
+  }
+
+  function customDeepUnionBy(arrays, iteratee) {
+    // 深度拍平 (基于你之前的逻辑)
+    function flattenDeep(array, result = []) {
+      for (var item of array) {
+        if (Array.isArray(item)) { // 这个条件的话只是它只关心“你是不是个数组”。如果你传了个字符串、
+          // 数字或者 null，它会立刻报错或返回。
+          flattenDeep(item, result); // 递归
+        } else {
+          result.push(item);
+        }
+      }
+      return result;
+    }
+    const flatList = flattenDeep(arrays);
+    let getFeature;
+    if (typeof iteratee === 'function') {
+      getFeature = iteratee;
+    } else if (typeof iteratee === 'string') {
+      getFeature = (obj) => ((obj && iteratee in obj) ? obj[iteratee] : undefined);
+    } else {
+      getFeature = (v) => v;
+    }
+    const result = [];
+    const seen = new Set();
+    for (const item of flatList) {
+      const feature = getFeature(item);
+      // 注意：这里不要用 !!，我们要存原始特征值（如 ID: 1）
+      if (!seen.has(feature)) {
+        seen.add(feature);
+        result.push(item);
+      }
+    }
+    return result;
+  }
+  let value = obj?.name ?? 'default'; // 处理null 
+  // ?. 表示：如果 obj 是 null/undefined，就停下不往后找了，返回 undefined
+  // ?? 表示：如果左边是 null/undefined，就取右边的默认值
+
+  // NaN解决办法 Number.isNaN(value)   if(value !== value)
+
+
+  function unionBy(...args) {
+    // 1. 识别最后一个参数是否为 iteratee
+    let iteratee = args.length > 1 ? args[args.length - 1] : undefined;
+    let arrays = args
+    // 判断标准：如果最后一个参数是函数、或者是一个字符串属性名
+    const isIteratee = typeof iteratee === 'function' || typeof iteratee === 'string';
+    if (isIteratee) {
+      arrays = args.slice(0, -1); // 剩下的才是要合并的数组
+    } else {
+      iteratee = (v) => v; // 默认：原值比较
+      // 如果没有 iteratee，那所有的参数都是数组
+    }
+    // 2. 转换 iteratee 为统一的函数格式
+    const getFeature = typeof iteratee === 'function'
+      ? iteratee
+      : (obj) => (obj !== null ? obj[iteratee] : undefined);
+    // 3. 处理烂数据并打平
+    // 过滤掉 null/undefined 以及非数组，然后只拍平一层
+    const flatList = arrays
+      .filter(item => Array.isArray(item))
+      .flat(1);
+    // 4. 去重逻辑
+    const result = [];
+    const seen = new Set();
+    for (const item of flatList) {
+      const feature = getFeature(item);
+      // Set 内部会处理 NaN === NaN 的逻辑，所以这里很安全
+      if (!seen.has(feature)) {
+        seen.add(feature);
+        result.push(item);
+      }
+    }
+    return result;
+  }
+</script>
+<script id="深拷贝">
+  function cloneDeep(value) {
+    if (value === null || typeof value !== 'object') {
+      return value;
+    }
+    // 2. 处理 NaN (特别照顾一下这个怪胎)
+    if (Number.isNaN(value)) return NaN;
+    // 3. 初始化容器：是数组就给 []，是对象就给 {}
+    let result = Array.isArray(value) ? [] : {};
+    // 4. 递归克隆
+    for (let key in value) {
+      // 确保只克隆对象自己的属性，不克隆原型链上的
+      if (Object.prototype.hasOwnProperty.call(value, key)) {
+        result[key] = cloneDeep(value[key]); // 递归：进入更深一层
+      }
+    }
+    return result;
+  }
+
+  // 如果你不知道有多少层展平，可以用 flat(Infinity)
+</script>
+<script id="UnionWith">
+  function unionWith(arrays, comparator) {
+    if (!Array.isArray(arrays) || typeof comparator !== 'function') {
+      return []
+    }
+    var result = []
+    outer:
+    for (var arr of arrays) {
+      if (!Array.isArray(arr)) continue
+      for (var item of arr) {
+        for (var existed of result) {
+          if (comparator(item, existed)) {
+            continue outer
+          }
+        }
+        result.push(item)
+      }
+    }
+    return result
+  }
+</script>
+<script id="uniq">
+  function sameValueZero(x, y) {
+    return x === y || (x !== x && y !== y)
+  }
+  function uniq(array) {
+    var result = []
+    for (var i = 0; i < array.length; i++) {
+      var value = array[i]
+      var hasValue = false
+      for (var j = 0; j < result.length; j++) {
+        if (sameValueZero(result[j], value)) {
+          hasValue = true
+          break
+        }
+      }
+      if (!hasValue) {
+        result.push(value)
+      }
+    }
+    return result
+  }
+</script>
+<script id="uniqBy">
+  function uniqBy(array, identity) {
+    var fn;
+    if (typeof identity === 'function') {
+      fn = identity
+    } else if (typeof identity === 'string') {
+      fn = obj => (obj && identity in obj) ? obj[identity] : undefined
+    }
+    var result = []
+    for (var i = 0; i < array.length; i++) {
+      var value = fn(array[i])
+      var hasValue = false
+      for (var j = 0; j < result.length; j++) {
+        if (fn(result[j]) === value) {
+          hasValue = true
+          break
+        }
+      }
+      if (!hasValue) {
+        result.push(array[i])
+      }
+    }
+    return result
+  }
+</script>
+<script id="uniqWith">
+  function baseIsNaN(value) {  // 这个函数是lodash里面处理数值对比的基石
+    return value !== value
+  }
+  function uniqWith(array, comparator) {
+    let index = -1  // 这一步的作用就是少写一步index++
+    var { length } = array // 等价于var length = array.length
+    var result = []
+    while (++index < length) {  // 遍历外部数组
+      // ++index是先自增然后再赋值
+      // index++是先赋值，再增加
+      var value = array[index]
+      var isSeen = false
+      if (comparator) { // 如果这个比较器函数存在的话，那么就执行下一步逻辑
+        var resultIndex = reuslt.length
+        while (resultIndex--) {  // 拿到一个新的元素，就去从后往前扫描一遍
+          if (comparator(value, result[resultIndex])) {
+            isSeen = true
+            break
+          }
+        }
+      } else {
+        // 这行代码是为了兼容性。如果你调用 UniqWith(array) 而没有传第二个参数（比较器），
+        // 它会自动退化成一个普通的 uniq 函数，使用 JavaScript 原生的 includes（全等比较 ===）来去重。
+        isSeen = result.includes(value)
+      }
+      if (!isSeen) {
+        reuslt.push(value)
+      }
+    }
+    return result
+  }
+</script>
+
+
+<script>
+  // bitmask这个是位掩码
+  function myIsEqual(value, other, bitmask, customizer, stack) {
+    // 1. 全等检查（处理基本类型）
+    if (value === other) {
+      return true;
+    }
+
+    // 2. 处理 null 或 undefined，以及非对象类型
+    // 这里应用了隐式转换value == null 其实就是这样写的 value == null || value == undefined 
+    if (value == null || other == null || (typeof value !== 'object' && typeof other !== 'object')) {
+      // 处理 NaN !== NaN 的特殊情况
+      return value !== value ? other !== other : false;
+    }
+
+    return baseIsEqualDeep(value, other, myIsEqual, stack);
+  }
+
+  /**
+   * 深度比较对象和数组的核心逻辑
+   */
+  function baseIsEqualDeep(object, other, equalFunc, stack) { // stack是直接模拟了一个栈
+    // 3. 处理循环引用（关键点！）
+    // const a = {}; a.me = a;
+    // const b = {}; b.me = b;
+    // 这个代码示例就是循环引用，就是自己引用自己
+    stack || (stack = new Map());
+    const stacked = stack.get(object);
+    if (stacked && stacked === other) {
+      return true;
+    }
+    stack.set(object, other);
+    // 4. 获取对象类型标签 [object Array] 或 [object Object]
+    const objTag = Object.prototype.toString.call(object);
+    const otherTag = Object.prototype.toString.call(other);
+    if (objTag !== otherTag) return false;
+    // 5. 针对不同类型进行处理
+    // 如果是数组
+    if (objTag === '[object Array]') {
+      if (object.length !== other.length) return false;
+      let index = object.length;
+      while (index--) {
+        if (!equalFunc(object[index], other[index], stack)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    // 6. 如果是普通对象
+    if (objTag === '[object Object]') {
+      const props = Object.keys(object);
+      if (props.length !== Object.keys(other).length) return false;
+
+      let index = props.length;
+      while (index--) {
+        const key = props[index];
+        // 必须保证 other 也有这个属性，且值深度相等
+        if (!(Object.prototype.hasOwnProperty.call(other, key) &&
+          equalFunc(object[key], other[key], stack))) {
+          return false;
+        }
+      }
+      return true;
+    }
+    // 7. 处理 Date, RegExp 等其他类型（这里简化处理）
+    return String(object) === String(other);
+  }
+  function cloneDeepFinal(value) {
+    // 1. 基本类型直接返回
+    if (value === null || typeof value !== 'object') {
+      return value;
+    }
+
+    const cache = new WeakMap();// 这里的话是弱引用
+    const root = Array.isArray(value) ? [] : {};
+
+    // 模拟系统调用栈
+    // 每个任务包含：当前要克隆的源数据 (source) 和 存放结果的目标对象 (target)
+    const stack = [{ source: value, target: root }];
+    cache.set(value, root);
+
+    while (stack.length > 0) {
+      const { source, target } = stack.pop();
+
+      // 获取所有键，包括 Symbol
+      const keys = Reflect.ownKeys(source);
+
+      for (const key of keys) {
+        const subValue = source[key];
+
+        // 如果是基本类型，直接赋值
+        if (subValue === null || typeof subValue !== 'object') {
+          target[key] = subValue;
+          continue;
+        }
+
+        // 如果是引用类型，检查缓存处理循环引用
+        if (cache.has(subValue)) {
+          target[key] = cache.get(subValue);
+          continue;
+        }
+
+        // 处理特殊对象类型（Date, RegExp 等）
+        const tag = Object.prototype.toString.call(subValue);
+        let subTarget;
+
+        if (tag === '[object Array]') {
+          subTarget = [];
+        } else if (tag === '[object Date]') {
+          target[key] = new Date(subValue.getTime());
+          continue;
+        } else if (tag === '[object RegExp]') {
+          target[key] = new RegExp(subValue.source, subValue.flags);
+          continue;
+        } else {
+          subTarget = Object.create(Object.getPrototypeOf(subValue));
+        }
+
+        // 建立引用联系并压入栈，等待下一轮处理
+        target[key] = subTarget;
+        cache.set(subValue, subTarget);
+        stack.push({ source: subValue, target: subTarget });
+      }
+    }
+
+    return root;
+  }
+</script>
+<script id="unzip">
+  function unzip(array) {
+    if (!(array && array.length)) { // 这个写法的话可以拦住空数组
+      return []
+    }
+    var maxLen = 0
+    for (var subArray of array) {
+      if (subArray.length > maxLen) {
+        maxLen = subArray.length
+      }
+    }
+    var result = new Array(maxLen)
+    for (var i = 0; i < maxLen; i++) {
+      result[i] = new Array(array.length)
+      for (var j = 0; j < array.length; j++) {
+        result[i][j] = array[j][i]
+      }
+    }
+    return result
+  }
+
+  function myUnzipModern(array) {
+    if (!(array && array.length)) return [];
+    // 首先的话array检查数组是不是存在（排除null和undefined）
+    // array.length检查数组是不是空的
+    // 短路优化
+
+    // 获取最长子数组的长度
+    const maxLen = Math.max(...array.map(sub => sub.length));
+
+    // 创建长度为 maxLen 的数组，并填充数据
+    return Array.from({ length: maxLen }, (_, i) => {
+      return array.map(subArray => subArray[i]);
+    });
+  }
+</script>
+<script id="惰性执行">
+  // 简易的代码实现
+  class Lazy {
+    constructor(data) {
+      this.data = data
+      this.tasks = []
+    }
+    filter(fn) {
+      this.tasks.push({ type: 'filter', fn })
+      return this
+    }
+    map(fn) {
+      this.tasks.push({ type: 'map', fn })
+      return this
+    }
+    value() {
+      var result = []
+      for (var item of this.data) {
+        var keep = true
+        var currentVal = item
+        for (var task of this.tasks) {
+          if (task.type === 'filter') {
+            if (!task.fn(currentVal)) {
+              keep = false
+              break
+            }
+          } else if (task.type === 'map') {
+            currentVal = task.fn(currentVal)
+          }
+        }
+        if (keep) result.push(currentVal)
+      }
+      return result
+    }
+  }
+</script>
+<script id="unzipWith">
+  function sameValueZero(value, other) {
+    return value === other || (value !== value && other !== other);
+  }
+  function unzipWith(array, interatee) {
+    if (!(array && array.length)) return []
+    let maxLen = 0
+    for (var i = 0; i < array.length; i++) {
+      let subArray = array[i]
+      if (subArray && subArray.length > maxLen) {
+        maxLen = subArray.length
+      }
+    }
+    var result = new Array(maxLen)
+    for (let i = 0; i < maxLen; i++) {
+      var group = new Array(array.length)
+      for (let j = 0; j < array.length; j++) {
+        group[i] = array[j][i]
+      }
+      result[i] = iteratee(...group)
+    }
+    return result
+  }
+
+
+  // 下面是接近源码的逻辑
+  // 1. 模拟 Lodash 内部的 apply 处理
+  // 源码中通常会根据参数长度做优化，这里展示其通用逻辑
+  function baseIteratee(func) {
+    return function (array) {
+      // 这里的 array 其实就是 unzip 出来的每一小组数据
+      // 使用 apply 将数组元素展开为单个参数传递给 func
+      return func.apply(undefined, array);
+    };
+  }
+
+  // 2. 核心的 unzip 函数（负责转置矩阵）
+  function unzip(array) {
+    if (!(array && array.length)) {
+      return [];
+    }
+
+    // 计算子数组的最大长度
+    let maxLen = 0;
+    for (let i = 0; i < array.length; i++) {
+      const sub = array[i];
+      if (sub && sub.length > maxLen) {
+        maxLen = sub.length;
+      }
+    }
+
+    const result = new Array(maxLen);
+    for (let i = 0; i < maxLen; i++) {
+      // 这里的 map 逻辑在源码里是专门的 arrayMap 函数
+      result[i] = array.map(subArray => subArray[i]);
+    }
+    return result;
+  }
+
+  // 3. 最终的 unzipWith
+  function unzipWith(array, iteratee) {
+    if (!(array && array.length)) {
+      return [];
+    }
+    // 第一步：先进行标准的 unzip
+    const unzipped = unzip(array);
+
+    // 第二步：对解开后的每一组应用 iteratee
+    // 这里用到刚才包装的 baseIteratee
+    const wrappedIteratee = baseIteratee(iteratee);
+
+    return unzipped.map(group => wrappedIteratee(group));
+  }
+
+
+  // 注：在非严格模式下，指向 undefined 或 null 会被自动转为 window（浏览器环境）。
+
+  // 作用域是静态的，this是动态的，函数调用时才会确定
+</script>
+<script id="without">
+  // 错误版本
+  function SameValueZero(a, b) {
+    return a === b || (a !== a && b !== b)
+  }
+  function without(array, ...values) {
+    if (!(array && array.length)) return []
+    var result = []
+    for (var i = 0; i < array.length; i++) {
+      var item = array[i]
+      for (var j = 0; j < values.length; j++) {
+        var items = values[j]
+        if (SameValueZero(item, items)) {
+          continue
+        } else {
+          result.push(item)
+        }
+      }
+    }
+    return result
+  }
+
+
+  function SameValueZero(a, b) {
+    return a === b || (a !== a && b !== b)
+  }
+  function without(array, ...values) {
+    if (!(array && array.length)) return []
+    var result = []
+    for (var i = 0; i < array.length; i++) {
+      var item = array[i]
+      var isExcluded = false
+      for (var j = 0; j < values.length; j++) {
+        if (SameValueZero(item, values[j])) {
+          isExcluded = true
+          break
+        }
+      }
+      if (!isExcluded) {
+        result.push(item)
+      }
+    }
+    return result
+  }
+
+  function myWithout(array, ...valuesToExclude) {
+    return array.filter(item => !valuesToExclude.includes(item));
+  }
+
+  function without(array, ...values) {
+    if (!(array && array.length)) return [];
+    // filter 会遍历 array，只保留返回 true 的元素
+    return array.filter(item => {
+      // 检查 item 是否不在 values 数组中
+      // 逻辑：如果 values 不包含 item，则保留
+      return !values.some(v => SameValueZero(v, item));
+    });
+  }
+
+</script>
+<script id="xor">
+  function sameValueZero(a, b) {
+    return a === b || (a !== a && b !== b)
+  }
+  function xor(...arrays) { // 收纳袋，将凌乱的数组收集成一个数组
+    var validArrays = arrays.filter(Array.isArray)
+    if (validArrays.length === 0) return []
+    var combined = [].concat(...validArrays)
+    var result = []
+    combined.forEach(item => {
+      var count = combined.filter(x => sameValueZero(x, item)).length
+      if (count % 2 !== 0 && !result.some(r => sameValueZero(r, item))) {
+        result.push(item)
+      }
+    })
+    return result
+  }
+</script>
+<script id="xorBy">
+  // 错误版本
+  function sameValueZero(a, b) {
+    return a === b || (a !== a && b !== b)
+  }
+  function xorBy(...arrays) {
+    var interatee = arrays.pop()
+    if (sameValueZero(interatee)) {
+      return arrays
+    }
+    var fn;
+    if (typeof interatee === 'function') {
+      fn = interatee
+    }
+    var array = [].concat(...arrays)
+    var result = []
+    for (var i = 0; i < array.length; i++) {
+      var item = fn(array[i])
+      for (var j = 0; j < result.length; j++) {
+        var it = fn(result[i])
+        if (item !== it) {
+          result.push(array[i])
+        }
+      }
+    }
+    return result
+  }
+
+  // 接近lodash的版本
+  function sameValueZero(a, b) {
+    return a === b || (a !== a && b !== b)
+  }
+  function baseIteratee(fn) {
+    return typeof fn === 'function' ? fn : v => v
+  }
+  function baseXor(arrays, iteratee) {
+    var reuslt = []
+    var seen = []
+    for (var i = 0; i < arrays.length; i++) {
+      var array = arrays[i]
+      if (array == null) continue
+      for (var j = 0; j < array.length; j++) {
+        var value = array[j]
+        var computed = iteratee(value)
+        var index = -1
+        for (var k = 0; k < seen.length; k++) {
+          if (sameValueZero(seen[k], computed)) {
+            index = k
+            break
+          }
+        }
+        if (index < 0) {
+          seen.push(computed)
+          result.push(value)
+        } else {
+          seen.splice(index, 1)
+          reuslt.splice(index, 1)
+        }
+      }
+    }
+    return result
+  }
+  function xorBy() {
+    var args = [].slice.call(arguments)
+    var iteratee = baseIteratee(args[args.length - 1])
+    if (iteratee !== args[args.length - 1]) {
+      iteratee = v => v
+    } else {
+      args.pop()
+    }
+    return baseXor(args, iteratee)
+  }
+
+  function getIteratee(value) {
+    if (typeof value === 'function') {
+      return value
+    }
+    if (value === null) {
+      return v => v
+    }
+    return v => v[value]
+  }
+
+  function xorByMap(...args) {
+    var interatee = typeof args[args.length - 1] === 'function' ? args.pop() : v => v
+    var map = new Map()
+    for (var i = 0; i < args.length; i++) {
+      var array = args[i]
+      if (!Array.isArray(array)) continue
+      for (var j = 0; j < array.length; j++) {
+        var value = array[j]
+        var key = iteratee(value)
+        if (map.has(key)) {
+          map.delete(key)
+        } else {
+          map.set(key, value)
+        }
+      }
+    }
+    return Array.from(map.values())
+    // map.values() 只要value不要key
+  }
+</script>
+<script id="xorWith">
+  function xorWith(...arrays) {
+    var comparator = typeof arrays[arrays.length - 1] === 'function' ? arrays.pop() : undefined
+    if (!comparator) return []
+    var combined = [].concat(...arryas)
+    var reuslt = []
+    combined.forEach(item => {
+      var count = combined.filter(x => comparator(item, x)).length
+      if (count % 2 !== 0) {
+        const isAlreadyInResult = reuslt.some(r => comparator(item, r))
+        if (!isAlreadyInResult) {
+          result.push(item)
+        }
+      }
+    })
+    return reuslt
+  }
+
+  function check(value) {
+    if (arguments.length === 0) {
+      console.log("状态:完全没有传参数")
+    } else if (!value && value !== undefined) {
+      console.log("状态:传了,但是个假值(如null,0,false)")
+    } else if (value === undefined) {
+      console.log("状态:传了,但传的是undefined(或者变量未定义)")
+    } else {
+      console.log("状态:传了真值")
+    }
+  }
+
+  var NOTHING = Symbol('nothing')
+
+  function xorWith(array, comparator = NOTHING) {
+    if (comparator === NOTHING) {
+      return "你根本没有写第二个参数"
+    }
+    if (typeof comparator !== 'function') {
+      return "你传了参数,但它不是函数(可能是null或0)"
+    }
+    return "参数合法"
+  }
+</script>
+<script id="zip">
+  function zip(...arrays) {
+    var maxLen = 0
+    for (var subArray of arrays) {
+      if (subArray.length > maxLen) {
+        maxLen = subArray.length
+      }
+    }
+    var result = new Array(maxLen)
+    for (var i = 0; i < maxLen; i++) {
+      result[i] = new Array(arrays.length)
+      for (var j = 0; j < arrays.length; j++) {
+        result[i][j] = arrays[j][i] // 这一步的话可以说是整个函数的灵魂
+      }
+    }
+    return reuslt
+  }
+</script>
+<script id="zipObject">
+  function zipObject(props, values) {
+    var obj = {}
+    for (var i = 0; i < props.length; i++) {
+      var key = props[i]
+      var value = values ? values[i] : undefined
+      reuslt[key] = value
+    }
+    return result
+  }
+  // JS 行为：当你执行 obj[key] = value 时，如果 key 不是字符串，JS 会强制执行 .toString()
+  function zipObject(props, values) {
+    if (props == null) return {}
+    var result = {}
+    var vals = values || []
+    for (var i = 0, length = pros.length; i < length; i++) {
+      var key = props[i]
+      var val = vals[i]
+      if (key === null || key === undefined) continue
+      result[String(key)] = val
+    }
+    return result
+  }
+
+  function zipObject(...args) {
+    var props = args[0] || [];
+    var values = args[1] || [];
+    var obj = {};
+
+    for (var i = 0; i < props.length; i++) {
+      // 这样你就能通过索引 i 同时访问两个数组了
+      obj[props[i]] = values[i];
+    }
+    return obj;
+  }
+</script>
+<script id="zipObjectDeep">
+  // 我可以称为复杂的函数
+  function pathToArray(path) {
+    return path.replace(/\[(\d+)\]/g, ".$1").split('.').filter(Boolean)
+  }
+  function baseSet(target, path, value) {
+    var keys = pathToArray(path)
+    var current = target
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i]
+      var isLast = i === keys.length - 1
+      if (isLast) {
+        current[key] = value
+      } else {
+        if (!current[key]) {
+          var nextKey = keys[i + 1]
+          current[key] = /^\d+$/.test(nextKey) ? [] : {}
+        }
+        current = current[key]
+      }
+    }
+  }
+  // lodash源码
+  function baseSet(object, path, value, customizer) {
+    if (!isObject(object)) {
+      return object;
+    }
+    path = castPath(path, object);
+    var index = -1,
+      length = path.length,
+      lastIndex = length - 1,
+      nested = object;
+    while (nested != null && ++index < length) {
+      var key = toKey(path[index]),
+        newValue = value;
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        return object;
+      }
+      if (index != lastIndex) {
+        var objValue = nested[key];
+        newValue = customizer ? customizer(objValue, key, nested) : undefined;
+        if (newValue === undefined) {
+          newValue = isObject(objValue)
+            ? objValue
+            : (isIndex(path[index + 1]) ? [] : {});
+        }
+      }
+      assignValue(nested, key, newValue);
+      nested = nested[key];
+    }
+    return object;
+  }
+  function zipObjectDeep(props, values) {
+    var result = {}
+    var keys = props || []
+    var vals = values || []
+    for (var i = 0; i < keys.length; i++) {
+      baseSe(reuslt, keys[i], vals[i])
+    }
+    return result
+  }
+</script>
+<script id="zipWith">
+  function zipWith(...args) {
+    var iteratee = args.length > 1 ? args.pop() : undefined
+    iteratee = typeof iteratee === 'function' ? iteratee : undefined
+    return unzipWith(args, iteratee)
+  }
+  function unzipWith(array, iteratee) {
+    if (!(array && array.length)) return []
+    var index = -1
+    var length = 0
+    array.forEach(subArray => {
+      length = Math.max(length, subArray ? subArray.length : 0)
+    })
+    const result = Array(length)
+    while (++index < length) {
+      const group = array.map(subArray => subArray[index])
+      if (iteratee) {
+        result[index] = iteratee(...group)
+      } else {
+        reuslt[index] = group
+      }
+    }
+    return result
+  }
+</script>

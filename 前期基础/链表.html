@@ -1,0 +1,221 @@
+<script>
+// 使用一个数组，空间占用大,因为又创建了一个新的数组
+  function arrayTolist(array) {
+    if (array.length == 0) {
+      return null
+    }
+    // 这里push进nodes数组里面的节点没有"链接"起来
+    var nodes = []
+    for (var i = 0; i < array.length; i++) {
+      var node = {
+        val: array[i], 
+        next: null,
+      }
+      // 指的就是这里push的节点，它创建了节点但是没有将节点"链接"起来
+      nodes.push(node)
+    } 
+    // "链接"数组里面的节点
+    for (var i = 1; i < nodes.length; i++) {
+      // 第0项的next是nodes[1]项！！！！！
+      nodes[i - 1].next = nodes[i]
+    }
+    return nodes[0]
+  }
+
+// 没有借用数组，空间占用小
+  function arrayTolist2(array) {
+    // 创建一个辅助节点，以方便后续得链接
+    var r = {val: 0, next: null} 
+    var p = r  
+    for (var i = 0; i < array.length; i++) {
+      var node = {
+        val: array[i],
+        next: null,
+      }
+      p.next = node
+      p = node
+    }
+    return r.next
+  }
+
+// 递归实现链表函数
+function arrayTolist3(array) {
+  if (array.length == 0) {
+    return null
+  }
+  var head = {
+    val: array[0],
+    next: null,
+  }
+  var restArray = array.slice(1)
+  head.next = arrayTolist3(restArray)
+  return head
+}
+
+//返回的是一个数组
+function listToarray(head) {
+  if (head == null) {
+    return []
+  }
+  var result = []
+  var p = head
+  while(p) {
+    result.push[p.val]
+    p = p.next
+  }
+  return result
+  }
+
+  // 递归链表转数组
+  function listToarray1(head) {
+    if (head == null) {
+      return []
+    }
+    return [head.val].concat(listToarray1(head.next))
+  }
+
+// 头节点插入
+function prepend(val, list) {
+  var node = {
+    val: val,
+    next: null,
+  }
+  node.next = list
+  return node
+}
+// 尾节点增加
+function append(val, head) {
+  var node = {
+    val: val,
+    next: null
+  }
+  if (!head) {
+    return node
+  }
+  var p = head 
+  var c = 1
+  while (p.next) {
+    p = p.next
+    c++
+  }
+  p.next = node
+
+  return head
+
+}
+// 把val增加到head链表里面去，增加时下标为i
+function insert(val, head, i) {
+  var node = {
+    val: val,
+    next: null,
+  }
+  if (i < 0) {
+    i == 0
+  }
+  if (!head) {
+    return node
+  }
+  if (i == 0) {
+    node.next = head
+    return node
+  }
+  var p = head
+  var c = 1
+  while (c < i && p.next) {
+    p = p.next
+    c++
+  }
+  node.next = p.next
+  p.next = node
+  return head
+}
+// 返回链表的第idx的值
+function nth(list, idx) {
+  if (idx < 0) {
+    return undefined
+  }
+  var p = list 
+  for (var i = 0; i < idx; i++) {
+    if (p) {
+      p = p.next
+    } else {
+      return undefined
+    }
+  }
+  // 考虑idx如果是最后一项
+  if (p) {
+    return p.val
+  }
+  return undefined
+}
+// 递归版
+function nth2(head, idx) {
+  if (idx < 0) {
+    return undefined
+  }
+  if (head == null) {
+    return undefined
+  }
+  // 真正的结束条件
+  if (idx == 0) {
+    return head.val
+  }
+  return nth2(head.next, idx - 1)
+}
+
+// 把head链表的idx元素删掉
+function remove(head, idx) {
+  if (idx < 0) {
+    return null
+  }
+  if (!head) {
+    return null
+  }
+  if (idx == 0) {
+    return head.next
+  }
+  var p = head
+  var c = 1
+  while(c < idx) {
+    p = p.next
+    c++
+  }
+  if (p) {
+    // 将元素跳过idx的值 然后利用链表的特性来删除（链表丢失上一个节点的值的话cpu会自动删除，js语言特性）
+    p.next = p.next.next
+  }
+  return head
+}
+// 处理严格相等的函数，递归
+function deepEqual(a, b) {
+  // 1. 处理严格相等
+  if (a === b) return true;
+  // 2. 处理非对象或 null
+  if (a === null || typeof a !== 'object' ||
+      b === null || typeof b !== 'object') {
+    return false;
+  }
+  // 3. 对象比较
+  const keysA = Object.keys(a);
+  const keysB = Object.keys(b);
+  if (keysA.length !== keysB.length) return false;
+  for (let key of keysA) {
+    // key 不存在 或 value 不相等
+    if (!keysB.includes(key) || !deepEqual(a[key], b[key])) {
+      return false;
+    }
+  }
+  return true;
+}
+// 测试
+var obj = { a: 1, b: { c: 2 } };
+console.log(deepEqual(obj, obj));                 // true
+console.log(deepEqual(obj, { a: 1, b: { c: 2 } })); // true
+console.log(deepEqual(obj, { a: 1, b: { c: 3 } })); // false
+console.log(deepEqual(1, '1'));                    // false
+
+Object.keys(obj) // js提供的一个静态方法，作用是返回对象自身可枚举属性的键名组成的 ，数组
+Object.values(obj) // 自身可枚举属性的值的 ，数组
+Object.entries(obj) // 自身可枚举属性的【键，值】 二维 ，数组
+// ！！！！！！注意全部转为数组，然后就可以使用数组的方法了
+</script>

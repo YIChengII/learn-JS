@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <script type="module">
+
+    import a from './a.js'
+    import tow, { PI, add, sub } from './math.JS'
+    import PriorityQueue, { heapSort } from './PriorityQueue.js'
+
+    // 导入的原始目标发生了变化，我们的这个也发生了变化
+    window.logPI = function () {
+      console.log(PI)
+    }
+    console.log(add(1, sub(2, 8)) + PI)
+
+    console.log(a)
+    // export声明// 单条具名导出
+    // export default 表达式 // 默认导出
+    // export {name1, name2} // 一次性导出多个具名导出
+
+
+    // import name from 'xxx'  导入默认导出，名字在这边自己起
+    // import {name1, name2} from 'xxx' 导入多个具名导出
+    // import {name1 as foo1, name2 as foo2} from 'yyy'  导入具名导出并重命名
+    // import name, {name1, name2} from 'yyy' 同时导入默认导出于具名导出
+    // import * as name from 'yyy' 导入一个模块的所有导出并放到name对象上，name对象是一个Modile类型的
+    // 对象，它甚至没有原型！
+
+
+    // 在不能或者不想使用import语句时，import也可以做为一个函数（可能说是运算符更合适）来使用
+    // 但是由于加载网络上的文件需要时间，所以这个函数前面要加一个await关键字
+    // 但是最终得到的一定是整个模块的模块对象，而不是里面的默认导出或具名导出
+    // cft = await import("http:// xxxxxxxxxxxxxxxx")
+
+    // cft.default() 就可以调用了
+
+
+    // 当把eval赋值给其它变量并使用其它变量调用时，将会在全局作用域执行给定的字符串
+    // 而直接用eval调用时，会在调用位置的作用域执行代码
+  </script>
+</body>
+
+</html>

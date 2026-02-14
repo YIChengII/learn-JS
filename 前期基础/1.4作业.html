@@ -1,0 +1,284 @@
+<script>
+    function J(n){
+
+    if (n > 0) {
+        return ('positive')
+    } else {
+        if (n == 0) {
+            return ('zero')
+        } else {
+            return ('negative')
+        }
+    }
+    }
+
+</script>
+<script>
+    var n = +prompt()
+
+    if (n < 0) {
+        console.log(-n)
+    } else {
+        console.log(n)
+    }
+
+</script>
+<script>
+    var n = +prompt()
+
+    if (n % 2 == 0) {
+        console.log('even')
+    } else {
+        console.log('odd')
+    }
+
+</script>
+<script>
+    var char = +prompt()
+
+    var ascii = char.charCodeAt(0)
+
+    if (ascii % 2 == 1) {
+        console.log('yes')
+    }
+    else {
+        console.log('no')
+    }
+</script>
+<script>
+    var x = +prompt()
+    var y = +prompt()
+
+
+    if (x > y) {
+        console.log('>')
+    } else {
+        if (x < y) {
+            console.log('<')
+        } else {
+            console.log('=')
+        }
+    }
+</script>
+<script>
+    var n = +prompt()
+
+    if ( x >= 10 && x < 100) {
+        console.log(1)
+    } else {
+        console.log(0)
+    }
+</script>
+<script>
+    var a = +prompt()
+    var b = +prompt()
+
+
+    if (a >= 10 || b >= 20) {
+        console.log(1)
+    } else {
+        console.log(0)
+    }
+</script>
+<script>
+    var x = +prompt()
+    if (x % 3 == 0 && x % 5 == 0) {
+        console.log('YES')
+    } else {
+        console.log('NO')
+    }
+
+</script>
+<script>
+    var n = +prompt()
+    // console.log里面直接打入空格
+    if ( n % 3 == 0 && n % 5 == 0 && n % 7 == 0) {
+        console.log(3, 5, 7)
+    } else {
+        if (n % 3 == 0 && n % 5 == 0) {
+            console.log(3, 5)
+        } else if (n % 5 == 0 && n % 7 == 0) {
+            console.log(5, 7)
+        } else if (n % 3 == 0 && n % 7 == 0) {
+            console.log(3, 7)
+        } else if (n % 3 == 0) {
+            console.log(3)
+        } else if (n % 5 == 0) {
+            console.log(5)
+        } else if (n % 7 == 0) {
+            console.log(7)
+        } else  {
+            console.log(n)
+        }
+    }
+</script>
+<script>
+    var a = +prompt()
+    var b = +prompt()
+
+
+    if (a < 60 && b >= 60 || a >= 60 && b < 60) {
+        console.log(1)
+    } else {
+        console.log(0)
+    }
+</script>
+<script id="2">
+    var a = +prompt()
+    var b = +prompt()
+    var c = +prompt()
+
+    var count = 0
+
+    if (a < 60) {
+        count = count + 1
+    }
+
+    if (b < 60) {
+        count = count + 1
+    }
+
+    if (c < 60) {
+        count = count + 1
+    }
+
+    if (count == 2) {
+        console.log('YES')
+    } else {
+        console.log('NO')
+    }
+
+</script>
+<script>
+    var weekday = +prompt()
+
+    if (weekday == 2 || weekday == 4 || weekday == 6 || weekday == 7) {
+        console.log('YES')
+    } else {
+        console.log('NO')
+    }
+</script>
+<script>
+    var distance = +prompt()
+
+    var timeByWalk = distance / 1.2
+
+    var timeByBike = 50 + distance / 3
+
+    if ( timeByBike < timeByWalk) {
+        console.log('Bike') 
+    } else if (timeByBike > timeByWalk) {
+        console.log('walk')
+    } else {
+        console.log('All')
+    }
+
+</script>
+<script>
+    var n = +prompt()
+    var y = prompt()
+
+
+    if (n < 5) {
+        y = -n + 2.5
+    } else if (n < 10) {
+        y = 2 - 1.5 * (n - 3) * (n - 3)
+    } else {
+        y = n / 2 - 1.5
+    }
+
+    console.log(y.toFixed(3))
+</script>
+<script>
+    var w = +prompt()
+    var em = prompt()
+
+    var price = 8
+
+    if (w > 1000) {
+        price = price + Math.ceil((w - 1000) / 500) * 4
+    }
+
+    if (em == 'y') {
+        price = price + 5
+    }
+
+    conseole.log(price)
+
+</script>
+<var><script>
+    var a = +prompt()
+    var b = +prompt()
+    var c = +prompt()
+
+    var max = -Infinity
+    if (a > max) {
+        max = a
+    }
+    if (b > max) {
+        max = b
+    }
+    if (c > max) {
+        max = c
+    }
+    
+
+    console.log(max)
+</script>
+<script>
+    var a = +prompt()
+    var b = +prompt()
+    var c = +prompt()
+
+
+    if (a + b > c && a + c > b && b + c > a) {
+        console.log('YES')
+    } else {
+        console.log('NO')
+    }
+</script>
+<script>
+    var n = +prompt()
+
+    if (n % 400 == 0 || n % 4 == 0 && n % 100 !== 0) {
+        console.log('YES')
+    } else {
+        console.log('NO')
+    }
+</script>
+<script>
+    var x = +prompt()
+    var y = +prompt()
+
+    if (x >= -1 && x <= 1 && y >= -1 && y <= 1) {
+        console.log('yes')
+    } else {
+        console.log('no')
+    }
+</script>
+<script>
+    var a = +prompt()
+    var b = +prompt()
+    var op = prompt()
+
+
+    if (op == '+') {
+        console.log(a + b)
+    } else if (op == '-') {
+        console.log(a - b)
+    } else if (op == '*') {
+        console.log(a * b)
+    } else if (op == '/') {
+        if (b == 0) {
+            console.log('Divided by zero!')
+        } else {
+            console.log(a / b)
+        }
+    } else {
+        console.log('Invalid operator!')
+    }
+</script>
+<script>
+    var n = +prompt()
+
+</script>

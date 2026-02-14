@@ -1,0 +1,111 @@
+<script>
+  class MultiplicatorUnitFailure {
+    constructor(message) {
+      this.message = message
+    }
+  }
+  function primitiveMultiply(a, b) {
+    if (Math.random() > 0.5) {
+      return a * b
+    } else {
+      throw new MultiplicatorUnitFailure('wdjiajidis')
+    }
+  }
+
+  // 我的版本
+  function multiply(a, b) {
+    var m = primitiveMultiply(a, b)
+    for (; ;) {
+      return multiply
+    }
+  }
+
+  // 真的版本
+  // 用一个事件发送一个消息，如果它尝试不通的话，它会一直尝试，直到发送成功
+  function multiply(a, b) {
+    while (true) {
+      try {
+        return primitiveMultiply(a, b)
+      } catch (e) {
+        if (e instanceof MultiplicatorUnitFailure) {
+          continue // 如果是的话，就忽略这个异常，继续重试
+        } else {
+          throw e
+        }
+      }
+    }
+  }
+
+  var x = multiply(5, 8) // 40
+
+  var box = {
+    locked: true,
+    unlock: function () { this.locked = false },
+    lock: function () { this.locked = true },
+    _content: [],
+    get content() {
+      if (this.locked) throw new Error("Locked !");
+      return this._content;
+    }
+  }
+  function withBoxUnlocked(f) {
+    // 如果f函数出错的话，那么f的错误会直接抛出去，由函数的调用者去处理
+    box.unlock() // 总是解锁，没有检查
+    try {
+      f() 
+      // 无论它打开或关闭，最后都会关闭盒子
+    } finally {
+      box.lock()
+    }
+  }
+  function withBoxUnlocked(body) { // 与上面代码的区别就在于判断这个盒子是否存在
+    var locked = box.locked
+    if(locked) {
+      box.unlock()
+    }
+    try {
+      body()
+    } finally {
+      if(locked) {
+        box.lock()
+      }
+    }
+  }
+  // with语句是打开资源性文件时，它打开后可以无脑的关闭
+  // 打开就有关闭
+  // 有借就有还
+  // 善始善终
+  // 对应的就是资源的分配与释放
+
+
+
+ // 通过创建一个常规错误对象，然后使用该对象的堆栈属性作为自己的属性。
+  function InputError(message) { // 1部分
+    this.message = message;
+    this.stack = (new Error()).stack;
+  }
+  InputError.prototype = Object.create(Error.prototype);
+  InputError.prototype.name = "InputError";
+
+  // 演示如何在循环里用try...catch有选择地处理特定的错误，让用户可以一直重试，知道输入正确
+  function promptDirection(question) {  // 2部分
+    var result = prompt(question, "");
+    if (result.toLowerCase() == "left") return "L";
+    if (result.toLowerCase() == "right") return "R";
+    throw new InputError("Invalid direction: " + result);
+  }
+
+  for (; ;) { // 3部分
+    try {
+      var dir = promptDirection("Where?"); // 3调2，2到catch(捕获)
+      console.log("You chose ", dir);
+      break;
+    } catch (e) {
+      if (e instanceof InputError)// 回到了
+        console.log("Not a valid direction. Try again.");
+      else
+        throw e;
+    }
+  }
+ 
+</script>

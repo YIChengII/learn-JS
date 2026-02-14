@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+</head>
+<body>
+  <div id="app">
+    <input ref="input1" type="text" :value="y" @input="y = $event.target.value">
+    <foo-bar ref="el3"></foo-bar>
+  </div>
+</body>
+<script>
+  Vue.component('foo-bar', {
+    template: `<div>Foo Bar</div>`
+  })
+  var app = new Vue({
+    el: "#app",
+    data() {
+      return {
+        x: 5,
+        y: 8,
+      }
+    },
+    mounted() {
+      this.$refs.input1.select()
+      console.log(this.$refs)
+    },
+  })
+</script>
+</html>

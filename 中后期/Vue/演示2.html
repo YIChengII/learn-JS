@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vue v-html 演示</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>v-html vs {{ }} 演示</h1>
+
+        <h2>普通文本显示 ({{ name }}):</h2>
+        <p>这里的内容通过 **双大括号 {{ }}** 显示：</p>
+        <div style="border: 1px solid blue; padding: 10px;">
+            {{ safeContent }}
+        </div>
+        <p>（观察上面框框里显示了什么）</p>
+
+        <hr>
+
+        <h2>HTML 内容显示 (v-html):</h2>
+        <p>这里的内容通过 **v-html 指令** 显示：</p>
+        <div style="border: 1px solid red; padding: 10px;">
+            <span v-html="dangerousContent"></span>
+        </div>
+        <p>（观察上面框框里显示了什么）</p>
+
+        <hr>
+
+        <h2>XSS 攻击演示：</h2>
+        <p>尝试在下面的输入框中输入内容，回车后观察上面两个框框的变化。</p>
+        <input type="text" v-model="userInput" @keyup.enter="updateContent" placeholder="输入 HTML 或 JS 代码，如 <h1>标题</h1> 或 <script>alert('危险！')</script>">
+        <button @click="updateContent">更新内容</button>
+    </div>
+
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                safeContent: "这是 **普通** 文本。",
+                dangerousContent: "这是 <strong>HTML</strong> 文本。",
+                userInput: '' // 用户输入的内容
+            },
+            methods: {
+                updateContent() {
+                    // 当用户输入时，同时更新两个显示区域
+                    this.safeContent = this.userInput;
+                    this.dangerousContent = this.userInput;
+                    this.userInput = ''; // 清空输入框
+                }
+            }
+        })
+
+
+
+        // 这个代码是演示XSS攻击的代码，下面是例子
+
+//         <h1>这是一个大标题</h1>
+//         蓝色框 ({{ }} 区域)：仍然显示 <h1>这是一个大标题</h1> 这样的纯文本。
+// 红色框 (v-html 区域)：会显示一个巨大的、加粗的 这是一个大标题。
+
+
+
+<script>alert('恭喜你，中奖了！')</script>
+ 蓝色框 ({{ }} 区域)：仍然显示 
+ <script>alert('恭喜你，中奖了！')</script> 这样的纯文本。
+// 红色框 (v-html 区域)：浏览器会弹出一个小窗口，显示“恭喜你，中奖了！
+// 这个例子里面的浏览器没有弹出这个窗口，因为Vue2处理v-html时有一个安全保护机制
+
+
+
+// <img src="1" onerror="alert('这就是XSS攻击！')">
+// 也就是利用了事件监听器
+// 这个代码可以演示攻击
+// 红色框显示了一个裂开的图片图标（因为 src="1" 是个错误的图片地址）。
+// 重点： 浏览器立刻弹出了窗口！
+// <img> 标签是合法的。
+// onerror 是 HTML 的一个属性，意思是“如果图片加载失败，就执行这段 JS 代码”。
+// 当浏览器通过 v-html 渲染这个标签时，它尝试加载图片，失败了，于是触发了 onerror 里的 JavaScript 代码
+</script>
+</body>
+</html>

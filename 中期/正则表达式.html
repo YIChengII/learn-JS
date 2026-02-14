@@ -1,0 +1,403 @@
+<script>
+  // 前端框架里面会用
+  // Moment.js
+  // Day.js
+
+  // 零宽断言连续使用时断言的是同一个位置
+
+  // (?=\w)(?<!\w)|(?<=\w)(?!\w) === \b
+  // (?<![^]) === ^
+  // (?![^]) === $
+
+  // 在正则表达式中，零宽断言的特点是：
+  // 匹配一个位置，而不是字符本身；
+  // 不会“消费”字符，即匹配后光标位置不动。
+  'a b'.match(/\b/g)
+  // 返回 ['','']
+  // 注意两个都是空字符串！因为它匹配的是“位置”，而不是文字
+
+  // 字符组/字符集
+
+  // \d   [0 - 9]
+  // \w   [0 - 9a- zA - Z_]
+  // \d	  Any digit character 任意数字字符
+  // \w	  An alphanumeric character (“word character”) 字母数字字符（“单词字符”）
+  // \s	  Any whitespace character (space, tab, newline, and similar) 任何空白字符（空格、制表符、换行符等）
+  // \D	  A character that is not a digit 非数字字符
+  // \W	  A nonalphanumeric character 非字母数字字符
+  // \S	  A nonwhitespace character 非空白字符  
+  // $：匹配字符串的结尾，确保匹配到字符串结束位置
+  // $1 ：引用第一个捕获组（也就是括号 () 里的内容）
+  // .	  Any character except for newline 除换行符之外的任何字符
+  // [...]：表示匹配方括号中的任意一个字符
+  // ^：放在方括号的开头时，表示取反（not），还可以用来匹配字符串的开头行首
+  // \d + 一个或多个数字	"1", "23", "12345"	❌ 不行
+  // \d * 零个或多个数字	"", "1", "23"	  ✅ 可以
+  // \b 是一个锚点（anchor），表示 单词边界（word boundary）。
+  // 它匹配的位置是单词字符（通常指字母、数字或下划线，即 \w 相当于 [A-Za-z0-9_]）
+  // 与非单词字符（\W 相当于 [^A-Za-z0-9_]）之间的边界，或者字符串的开头/结尾（如果紧邻单词字符）
+  console.log(/\bcat\b/.test("concatenate"));
+  // → false
+  console.log(/\bcat\b/.test("cat"))
+  // -> true
+
+  // 字符串search方法
+  let str = "Hello World";
+
+  console.log(str.search(/World/)); // 👉 6
+  console.log(str.search(/o/));     // 👉 4（第一个 o 的位置）
+  console.log(str.search(/x/));     // 👉 -1（没找到）
+
+  var pattern = /y/g;
+  pattern.lastIndex = 3; // 手动将起始索引变成3，也就是从z开始
+  var match = pattern.exec("xyzzy");
+  console.log(match.index);
+  // → 4
+  console.log(pattern.lastIndex); // 自动更新索引lastIndex
+  // → 5
+  //   索引 0: 'x'
+  //   索引 1: 'y' (如果从 0 开始搜索，会匹配这个)
+  //   索引 2: 'z'
+  //   索引 3: 'z'
+  //   索引 4: 'y'
+
+
+  //   lastIndex 是 RegExp 对象的属性，与具体字符串无关。即使在不同的字符串上调用 exec()，
+  //   它也会从当前的 lastIndex 开始搜索。这就是为什么第二次调用受第一次影响的原因。
+  //   如果 lastIndex >= 字符串长度，exec() 直接返回 null 并重置 lastIndex 为 0。
+  //   如果没有 g 标志，lastIndex 会被忽略，每次搜索都从字符串开头开始。
+  //   这在处理多个字符串或迭代匹配时需要注意；如果想在每个新字符串上从头搜索，可以手动设置 digit.lastIndex = 0;
+
+
+  var input = "A string with 3 numbers in it... 42 and 88.";
+  var number = /\b(\d+)\b/g;
+  var match;
+  while (match = number.exec(input))
+    console.log("Found", match[1], "at", match.index);
+  // → Found 3 at 14
+  //   Found 42 at 33
+  //   Found 88 at 40
+
+  var animalCount = /\b\d+ (pig|cow|chicken)s?\b/;
+  console.log(animalCount.test("15 pigchickens")) // -> false 
+  console.log(animalCount.test("15 chickens")) // -> true 
+  // var quotedText = /'([^']*)'/
+  // [^']* 部分表示匹配零个或多个不是单引号 ' 的字符，但它必须在两个单引号之间。
+  // 正则的标记位
+  // d  会将分组捕获到的内容在原始字符串中的位置也告知我们
+  // g  全局，影响replace方法以及match方法
+  // i  不区分大小写
+  // m  多行匹配，影响^$的行为
+  // s  可以匹配所有符号，包括回车
+  // y  每次匹配都要从“头”开始，可以认为相当于正则的前面被增加了一个^,但它不表示字符串的开头位置，而是首次尝试开始的位置
+  // \r	匹配一个回车符（carriage return，ASCII 13）
+  // ?	表示“可有可无”，即前面的 \r 可能出现 0 次或 1 次
+  // \n	匹配一个换行符（line feed，ASCII 10）
+
+  // 量词
+  // 正常情况下它们都是贪婪的，但是在后面加上？号后都会变成惰性匹配
+  //  （?）匹配前面的内容0次或1次      （+）1次或更多次      （*）0次或更多次
+  //          {0,1}                        {1,}                 {0,}
+  // 惰性匹配（+？）最少次数（*？）都是一样，变成惰性匹配
+
+  //分组
+  // ()
+  // （？：）非捕获分组，任何括号的前面有？：则它成为一个非捕获分组，它与普通括号的区别是它不计入分组编号，也不捕获
+  // 它不捕获它要括号干嘛？可以用来给括号整体加量词
+
+  // 先序遍历，走迷宫，分支探索，回溯，本质都一样
+
+  /* 正则相关的函数
+  Sring.prototype.match
+  match方法接受带g不带g标记的正则表达式，其行为不一样，不带g时，基本等价于exec方法，会找到匹配及分组
+  捕获到的东西，带g时，与exec方法就完全不同了，它只会找到所有的完整匹配
+  Sring.prototype.replace
+  正则表达式在字符串替换中的应用
+  let str = "hello world"
+  let newStr = str.replace("world", "JavaScript")
+  console.log(newStr); // -> "hello JavaScript"
+  使用正则的replace
+  let str = "abc123abc456"
+  let newStr = str.replace(/\d+/g, '#')
+  console.log(newStr) // -> "abc#abc#"
+  replace的第二个参数可以是字符串或回调函数，你可以用$特殊符号引用捕获组，也可以是函数
+  Sring.prototype.split
+  可以通过正则将字符串split成多个部分，当split使用正则拆分字符串时，正则中分组捕获到的内容会出现在拆分位置上
+  Sring.prototype.search
+  类似字符串的indexOf方法，只能返回找到的匹配下标
+
+  Group具名分组
+ 
+  前向引用
+  在正则中可以使用\1\2等表示该正则中第一/二个分组捕获到的具体内容
+  "张三 李四 郭富城 王五 韩朵朵 李一一 高圆圆".match(/.(.)\1/g) 
+  这个例子是反向引用的例子，主要的代码就是\1,表示再次出现和捕获组1相同的字符
+  // -> ['韩朵朵', '李一一', '高圆圆']
+
+  RegExp.prototype.test
+  用于检查一个字符串是否包含一个正则表达式的匹配项的函数。它会返回一个布尔值：如果找到匹配项就返回true，否则就返回false
+  如果设置了g标志test()方法会保留正则表达式对象的lastIndex属性。这意味着对同一个正则表达式对象连续调用test()将会从上一次
+  匹配的位置继续搜索，就像一个迭代器
+  RegExp.prototype.exec
+  exec() 的返回结构
+
+  当匹配成功时，exec() 返回一个数组：
+  索引 0：始终是完整匹配的字符串（整个正则模式匹配到的子串）。
+  索引 1 及以后：每个子捕获组（由括号 () 定义）的匹配内容，按正则表达式中从左到右的顺序单独列出。
+  如果某个捕获组未匹配（例如可选组），对应位置会是 undefined。
+  数组还包含额外属性，如 index（匹配起始位置）、input（原始字符串），以及如果有命名捕获组（使用 ?<name>），
+  还会有一个 groups 对象单独存储命名组的信息。
+  用来在字符串里面执行一次匹配，匹配成功，返回一个数组（包含匹配结果和捕获组）失败的话返回null
+
+  /(\d)+/.exec("123")：
+  完整匹配："123"（数组索引 0）。
+  子捕获组 (\d)+：+ 表示重复一次或多次，但 JavaScript 的正则引擎在重复捕获组时，只记住最后一次匹配的内容。
+  所以这里单独捕获的是最后一个数字 "3"（数组索引 1），而不是整个 "123"。
+  输出：["123", "3"]。
+  这突出了量化子捕获组的特殊行为：重复时只保留最后一次子匹配
+    
+  groups命名捕获组时才会有值
+  特殊之处，全局匹配
+  当正则带有g标志时，exec会记住上一次匹配的位置，然后从下一个位置继续匹配
+
+  [^] 可以匹配任何一种字符,匹配任何不是无的任意字符，所以它可以包括换行符
+  */
+
+  // 解析INI文件，利用正则表达式
+  // INI文件例
+  // searchengine = http://www.google.com/search?q=$1
+  // spitefulness = 9.7
+
+  //   ; comments are preceded by a semicolon...
+  // ; each section concerns an individual enemy
+  // [larry]
+  // fullname = Larry Doe
+  // type = kindergarten bully
+  // website = http://www.geocities.com/CapeCanaveral/11451
+
+  // [gargamel]
+  // fullname = Gargamel
+  // type = evil sorcerer
+  // outputdir = /home/marijn / enemies / gargamel
+
+  function parseINI(string) {
+    // Start with an object to hold the top-level fields
+    var currentSection = { name: null, fields: [] };
+    var categories = [currentSection];
+
+    string.split(/\r?\n/).forEach(function (line) {
+      var match;
+      if (/^\s*(;.*)?$/.test(line)) { // 是否是空行或者是注释行
+        return;
+      } else if (match = line.match(/^\[(.*)\]$/)) { // 匹配大括号，因为是特殊字符所以用\转义
+        currentSection = { name: match[1], fields: [] };
+        categories.push(currentSection);
+      } else if (match = line.match(/^(\w+)=(.*)$/)) {
+        currentSection.fields.push({
+          name: match[1],
+          value: match[2]
+        });
+      } else {
+        throw new Error("Line '" + line + "' is invalid.");
+      }
+    });
+    return categories;
+  }
+
+
+  var escaped = name.replace(/[^\w\s]/g, "\\$&")
+  //   / [^\w\s] / g ：匹配所有不是字母、数字或空格的字符，也就是那些正则特殊符号（例如 +, [,]）
+  // "\\$&" ：表示“在前面加一个反斜杠”
+  // $ & 是一个替换符，代表“匹配到的字符本身”
+
+
+  // 下面是时间戳，还有getTime()的使用
+  console.log(new Date(2013, 11, 19).getTime());
+  // → 1387407600000
+  console.log(new Date(1387407600000));
+  // → Thu Dec 19 2013 00:00:00 GMT+0100 (CET)
+  function findDate(string) {
+    var dateTime = /(\d{1,2})-(\d{1,2})-(\d{4})/;
+    var match = dateTime.exec(string);
+    return new Date(Number(match[3]),
+      Number(match[2]) - 1,
+      Number(match[1]));
+  }
+  console.log(findDate("30-1-2003"));
+  // → Thu Jan 30 2003 00:00:00 GMT+0100 (CET)
+  new Date(2003, 0, 30) // -> Thu Jan 30 2003 00:00:00 GMT+0100 (CET)
+  // 上面两个表达的结果都是一样的
+
+  var stock = "1 lemon, 2 cabbages, and 101 eggs";
+  function minusOne(match, amount, unit) { // match是整个捕获组，amount是(\d+)里面的数字，unit是(\w+)单位名
+    amount = Number(amount) - 1;
+    if (amount == 1) {// only one left, remove the 's'
+      unit = unit.slice(0, unit.length - 1);
+    } else if (amount == 0) {
+      amount = "no";
+      return amount + " " + unit;
+    }
+    console.log(stock.replace(/(\d+) (\w+)/g, minusOne)); // minusOne是回调函数，每匹配成功一次都会执行一次
+  }
+  // → no lemon, 1 cabbage, and 100 eggs
+
+  "1  lemon , 2  cabbages , and  101  eggs ".replace(/(\d+)  (\w+)/g, function (match, amount, unit) {
+    amount = Number(amount)
+    amount--
+    if (amount == 1) {
+      unit = unit.slice(0, -1)
+    }
+    return amount + ' ' + unit
+  })
+  // -> '0 lemon , 1 cabbage , and  100 eggs '
+
+
+  // 创建正则表达式函数 
+  var re1 = new RegExp("abc");
+  var re2 = /abc/
+  // 它们两个都一样
+  var regexp = new RegExp("\\b(" + name + ")\\b", "gi");
+  // RegExp 构造函数的第二个参数包含正则表达式的选项 - 在本例中为“gi”，表示全局且不区分大小写。
+
+
+  console.log("papa".replace("p", "m"));
+  // → mapa
+
+  console.log("Borobudur".replace(/[ou]/, "a"));
+  // → Barobudur
+  console.log("Borobudur".replace(/[ou]/g, "a"));
+  // → Barabadar
+  console.log(/[0123456789]/.test("in 1992"));
+  // → true
+  console.log(/[0-9]/.test("in 1992"));
+  // → true
+
+  "2321312312312312312".replace(/^\d+(?=....$)/, (match) => {
+    return '#'.repeat(match.length)
+  })
+  // -> "######################2312"
+
+  "2321312312312312312".replace(/\d(?=....$)/g, '#')
+  // -> "######################2312"
+
+  // 零宽断言的括号是不计入分组的
+
+
+  '72olle 103doo 100ya Hello good day 82yade 115te 103o'.replace(/\b(?<ascii>\d+)(?<second>\w)?(\w*?)(?<last>\w)?\b/g,
+    (match, ascii, second, mid, last) => {
+      return String.fromCharCode(ascii) + (last || '') + (mid || '') + (second || '')
+    })
+
+  // -> 'Hello good day Hello good day Ready set go'
+
+
+  // GC的意思是Garrbage Collection，垃圾回收，它负责自动回收不再被引用的内存，避免内存泄漏
+
+  String.raw`foo\bar\baz` // 所见即所得，语法奇异，这种语法就是再用一种固定的方式在调用前面的函数`foo....`调用String.raw
+  // tagged template string语法
+
+  // String 上的raw方法就是这么写的
+  // parts表示的是静态部分，...values是插值表达式的计算结果
+  // 不会自动转义
+  function raw(parts, ...values) {
+    var result = ''
+    for (var i = 0; i < values.length; i++) {
+      // 如果直接使用parts[i],你会得到处理后的字符串（可能已经转义）
+      result += parts.raw[i] + values[i]
+    }
+    return result + parts.raw[i]
+  }
+  // parts部分是 ow  i\\ej
+  // ...values部分是${2*3}
+  // 标签模板字符串
+  // 必须是合法的字符串
+  String.raw`ow${2 * 3}i\\ej` === raw`ow${2 * 3}i\\ej`
+
+  // 其它函数如何通过exec函数实现的
+  RegExp.prototype.myTest = function (str) {
+    if (this.exec(str)) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  String.prototype.mySearch = function (re) { // 返回第一个匹配的索引位置
+    var match = re.exec(this)
+    if (match) {
+      return match.index
+    } else {
+      return -1
+    }
+  }
+
+  String.prototype.mySplit = function (re) {
+    var result = []
+    var match
+    var lastLastIndex = 0
+    while (match = re.exec(this)) {
+      result.push(this.slice(lastLastIndex, match.index))
+      result.push(...match.slice(1))
+      lastLastIndex = re.lastIndex
+    }
+    result.push(this.slice(lastLastIndex))
+    return result
+  }
+  // 这个细节是容易被忽略的
+  // 没有任何地方我们手动定义 index，但它就是存在的 —— 因为这是 RegExp.prototype.exec() 自动生成的属性
+  //   match[0]	整个匹配到的文本
+  // match[1], match[2], ...	各个捕获组（()）匹配到的内容
+  // match.index	这次匹配在字符串中开始的位置（数值）
+  // match.input	被匹配的原始字符串
+  // match.groups	命名捕获组结果（ES2018 新增）
+  // 字符串的所有方法都不会改变正则的lastIndex属性
+
+  String.prototype.myMatch = function (re) {
+    if (re.global) {
+      var result = []
+      var match
+      while (match = re.exec(this)) {
+        result.push(match[0])
+      }
+      if (result.lenngth == 0) {
+        return null
+      } else {
+        return result
+      }
+    } else {
+      return re.exec(this)
+    }
+  }
+  //   re.global	是否带有全局标志 g	/a/g → true
+  // re.ignoreCase	是否带有 i 标志（忽略大小写）	/a/i → true
+  // re.multiline	是否带有 m 标志（多行模式）	/a/m → true
+  // re.sticky	是否带有 y 标志	/a/y → true
+  // re.unicode	是否带有 u 标志	/a/u → true
+
+  String.prototype.myReplace = function (re, replacer) { // replacer是一个回调函数
+    var result = ''
+    var match
+    var lastLastIndex = 0
+    while (match = re.exec(this)) {
+      result += this.slice(lastLastIndex, match.index)
+      result += replacer(...match)
+      lastLastIndex = re.lastIndex
+    }
+    return result + this.slice(lastLastIndex)
+  }
+  // 完整的逻辑
+  // 示例 replacer：打印参数并返回大写
+  function exampleReplacer(fullMatch, ...groups) {
+    console.log(`Called with full: ${fullMatch}, groups: ${groups}`);
+    return fullMatch.toUpperCase();
+  }
+
+  var string = "hello world hello universe";
+  const result = string.myReplace(/hello/g, exampleReplacer);
+  console.log(result);  // 输出调用日志和 "HELLO world HELLO universe"
+
+  // 所有函数的实现都只考虑有g的存在
+
+  // 回溯算法(二叉树的先序遍历很像)
+
+</script>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>進階版記事本</title>
+<style>
+  body {
+    font-family: "Segoe UI", "微軟正黑體", sans-serif;
+    background: #f5f6fa;
+    margin: 0;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+
+  .container {
+    background: #fff;
+    width: 450px;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+
+  h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 1.2rem;
+  }
+
+  select, textarea, button, input[type="file"] {
+    width: 100%;
+    margin-top: .6rem;
+    font-size: 1rem;
+  }
+
+  select {
+    padding: .4rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  textarea {
+    resize: vertical;
+    height: 12em;
+    padding: .8rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    transition: border-color 0.2s ease;
+  }
+
+  textarea:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+
+  button {
+    background: #007bff;
+    color: white;
+    padding: .5rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  button:hover {
+    background: #0056b3;
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .searchbox {
+    margin-bottom: .8rem;
+  }
+
+  .footer {
+    text-align: center;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    color: #777;
+  }
+</style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🗒 我的記事本</h1>
+
+    <!-- 🔍 搜尋欄 -->
+    <input type="text" id="search" class="searchbox" placeholder="搜尋筆記名稱...">
+
+    <!-- 下拉選單與工具列 -->
+    <div class="toolbar">
+      <select id="list"></select>
+      <button id="newNoteBtn">＋</button>
+      <button id="deleteNoteBtn">🗑</button>
+    </div>
+
+    <!-- 筆記內容 -->
+    <textarea id="currentnote" placeholder="開始輸入你的內容..."></textarea>
+
+    <!-- 匯入與匯出 -->
+    <div class="toolbar">
+      <button id="exportBtn">💾 匯出筆記</button>
+      <button id="importBtn">📂 匯入筆記</button>
+      <input type="file" id="fileInput" accept=".json" style="display:none">
+    </div>
+
+    <div class="footer">筆記自動儲存在瀏覽器中</div>
+  </div>
+
+<script>
+  // === 全局變量 ===
+  const list = document.querySelector("#list");
+  const current = document.querySelector("#currentnote");
+  const newBtn = document.querySelector("#newNoteBtn");
+  const deleteBtn = document.querySelector("#deleteNoteBtn");
+  const search = document.querySelector("#search");
+  const exportBtn = document.querySelector("#exportBtn");
+  const importBtn = document.querySelector("#importBtn");
+  const fileInput = document.querySelector("#fileInput");
+
+  // === 初始化 notes (從 localStorage 讀取或建立預設筆記) ===
+  let notes = JSON.parse(localStorage.getItem("notes")) || { "我的第一則筆記": "" };
+
+  // === 函數區 ===
+
+  /**
+   * refreshList()
+   * 刷新下拉選單內容，根據 notes 的鍵生成 <option>
+   */
+  function refreshList(filter = "") {
+    list.innerHTML = "";
+    for (let name in notes) {
+      if (filter && !name.toLowerCase().includes(filter.toLowerCase())) continue;
+      const option = document.createElement("option");
+      option.textContent = name;
+      option.value = name;
+      list.appendChild(option);
+    }
+  }
+
+  /**
+   * saveToStorage()
+   * 將 notes 保存到 localStorage
+   */
+  function saveToStorage() {
+    localStorage.setItem("notes", JSON.stringify(notes));
+  }
+
+  /**
+   * setCurrentNote(name)
+   * 切換顯示當前筆記內容
+   */
+  function setCurrentNote(name) {
+    if (!notes[name]) return;
+    list.value = name;
+    current.value = notes[name];
+  }
+
+  /**
+   * createNote()
+   * 新增筆記（使用者輸入名稱）
+   */
+  function createNote() {
+    const name = prompt("請輸入新筆記名稱：");
+    if (!name) return;
+    if (notes.hasOwnProperty(name)) {
+      alert("筆記名稱已存在！");
+      setCurrentNote(name);
+      return;
+    }
+    notes[name] = "";
+    saveToStorage();
+    refreshList();
+    setCurrentNote(name);
+  }
+
+  /**
+   * deleteNote()
+   * 刪除當前筆記（需確認）
+   */
+  function deleteNote() {
+    const name = list.value;
+    if (!name) return;
+    const confirmDelete = confirm(`確定要刪除「${name}」這則筆記嗎？`);
+    if (!confirmDelete) return;
+
+    delete notes[name];
+    saveToStorage();
+    refreshList();
+    // 若還有筆記，顯示第一則
+    const first = Object.keys(notes)[0];
+    if (first) setCurrentNote(first);
+    else current.value = "";
+  }
+
+  /**
+   * exportNotes()
+   * 將所有筆記匯出成 JSON 檔案
+   */
+  function exportNotes() {
+    const blob = new Blob([JSON.stringify(notes, null, 2)], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "notes_backup.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  /**
+   * importNotes()
+   * 從 JSON 檔案匯入筆記
+   */
+  function importNotes() {
+    fileInput.click();
+  }
+
+  // === 初始化畫面 ===
+  refreshList();
+  setCurrentNote(Object.keys(notes)[0]);
+
+  // === 事件綁定 ===
+
+  // 切換筆記時顯示內容
+  list.addEventListener("change", () => {
+    setCurrentNote(list.value);
+  });
+
+  // 自動儲存
+  current.addEventListener("input", () => {
+    notes[list.value] = current.value;
+    saveToStorage();
+  });
+
+  // 新增筆記
+  newBtn.addEventListener("click", createNote);
+
+  // 刪除筆記
+  deleteBtn.addEventListener("click", deleteNote);
+
+  // 搜尋筆記（即時過濾）
+  search.addEventListener("input", () => {
+    refreshList(search.value);
+  });
+
+  // 匯出筆記
+  exportBtn.addEventListener("click", exportNotes);
+
+  // 匯入筆記
+  importBtn.addEventListener("click", importNotes);
+
+  // 讀取匯入的檔案
+  fileInput.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const imported = JSON.parse(event.target.result);
+        Object.assign(notes, imported);
+        saveToStorage();
+        refreshList();
+        alert("✅ 匯入成功！");
+      } catch {
+        alert("❌ 檔案格式錯誤！");
+      }
+    };
+    reader.readAsText(file);
+  });
+</script>
+</body>
+</html>

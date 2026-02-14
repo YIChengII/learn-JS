@@ -1,0 +1,413 @@
+<script>
+  // 红黑树也称为自平衡二叉查找树，它在插入和删除时通过颜色标记（红/黑）+旋转操作
+
+  // 红黑树节点。简易版红黑树
+  class RBNode {
+    constructor(key, color = "RED", left = null, right = null, parent = null) {
+      this.key = key;
+      this.color = color;  // RED 或 BLACK
+      this.left = left;
+      this.right = right;
+      this.parent = parent;
+    }
+  }
+  // 红黑树类
+  class RedBlackTree {
+    constructor() {
+      this.NIL = new RBNode(null, "BLACK"); // 哨兵节点（叶子）
+      this.root = this.NIL;
+    }
+    // 左旋
+    leftRotate(x) {
+      let y = x.right;
+      x.right = y.left;
+      if (y.left !== this.NIL) {
+        y.left.parent = x;
+      }
+      y.parent = x.parent;
+      if (x.parent === null) {
+        this.root = y;
+      } else if (x === x.parent.left) {
+        x.parent.left = y;
+      } else {
+        x.parent.right = y;
+      }
+      y.left = x;
+      x.parent = y;
+    }
+    // 右旋
+    rightRotate(x) {
+      let y = x.left;
+      x.left = y.right;
+      if (y.right !== this.NIL) {
+        y.right.parent = x;
+      }
+      y.parent = x.parent;
+      if (x.parent === null) {
+        this.root = y;
+      } else if (x === x.parent.right) {
+        x.parent.right = y;
+      } else {
+        x.parent.left = y;
+      }
+      y.right = x;
+      x.parent = y;
+    }
+    // 插入
+    insert(key) {
+      let node = new RBNode(key);
+      node.left = this.NIL;
+      node.right = this.NIL;
+
+      let y = null;
+      let x = this.root;
+
+      while (x !== this.NIL) {
+        y = x;
+        if (node.key < x.key) {
+          x = x.left;
+        } else {
+          x = x.right;
+        }
+      }
+
+      node.parent = y;
+      if (y === null) {
+        this.root = node;
+      } else if (node.key < y.key) {
+        y.left = node;
+      } else {
+        y.right = node;
+      }
+
+      node.color = "RED";
+      this.insertFixup(node);
+    }
+
+    // 插入修复
+    insertFixup(z) {
+      while (z.parent && z.parent.color === "RED") {
+        if (z.parent === z.parent.parent.left) {
+          let y = z.parent.parent.right; // 叔叔
+          if (y.color === "RED") {
+            // Case 1: 父红叔红
+            z.parent.color = "BLACK";
+            y.color = "BLACK";
+            z.parent.parent.color = "RED";
+            z = z.parent.parent;
+          } else {
+            if (z === z.parent.right) {
+              // Case 2: 父红叔黑 且自己是右子
+              z = z.parent;
+              this.leftRotate(z);
+            }
+            // Case 3: 父红叔黑 且自己是左子
+            z.parent.color = "BLACK";
+            z.parent.parent.color = "RED";
+            this.rightRotate(z.parent.parent);
+          }
+        } else {
+          let y = z.parent.parent.left; // 叔叔
+          if (y.color === "RED") {
+            z.parent.color = "BLACK";
+            y.color = "BLACK";
+            z.parent.parent.color = "RED";
+            z = z.parent.parent;
+          } else {
+            if (z === z.parent.left) {
+              z = z.parent;
+              this.rightRotate(z);
+            }
+            z.parent.color = "BLACK";
+            z.parent.parent.color = "RED";
+            this.leftRotate(z.parent.parent);
+          }
+        }
+      }
+      this.root.color = "BLACK";
+    }
+
+    // 中序遍历（调试用）
+    inorder(node = this.root) {
+      if (node !== this.NIL) {
+        this.inorder(node.left);
+        console.log(node.key, node.color);
+        this.inorder(node.right);
+      }
+    }
+  }
+
+  // 测试
+  var tree = new RedBlackTree();
+  tree.insert(10);
+  tree.insert(20);
+  tree.insert(30);
+  tree.insert(15);
+
+  console.log("中序遍历：");
+  tree.inorder();
+
+
+
+
+
+  // 红黑树节点,功能完全的红黑树
+  class RBNode {
+    constructor(key, color = "RED", left = null, right = null, parent = null) {
+      this.key = key;
+      this.color = color;
+      this.left = left;
+      this.right = right;
+      this.parent = parent;
+    }
+  }
+
+  class RedBlackTree {
+    constructor() {
+      this.NIL = new RBNode(null, "BLACK"); // 哨兵节点
+      this.root = this.NIL;
+    }
+
+    // 左旋
+    leftRotate(x) {
+      let y = x.right;
+      x.right = y.left;
+      if (y.left !== this.NIL) y.left.parent = x;
+
+      y.parent = x.parent;
+      if (x.parent === null) {
+        this.root = y;
+      } else if (x === x.parent.left) {
+        x.parent.left = y;
+      } else {
+        x.parent.right = y;
+      }
+
+      y.left = x;
+      x.parent = y;
+    }
+
+    // 右旋
+    rightRotate(x) {
+      let y = x.left;
+      x.left = y.right;
+      if (y.right !== this.NIL) y.right.parent = x;
+
+      y.parent = x.parent;
+      if (x.parent === null) {
+        this.root = y;
+      } else if (x === x.parent.right) {
+        x.parent.right = y;
+      } else {
+        x.parent.left = y;
+      }
+
+      y.right = x;
+      x.parent = y;
+    }
+
+    // 插入
+    insert(key) {
+      let node = new RBNode(key);
+      node.left = this.NIL;
+      node.right = this.NIL;
+
+      let y = null;
+      let x = this.root;
+
+      while (x !== this.NIL) {
+        y = x;
+        if (node.key < x.key) x = x.left;
+        else x = x.right;
+      }
+
+      node.parent = y;
+      if (y === null) {
+        this.root = node;
+      } else if (node.key < y.key) {
+        y.left = node;
+      } else {
+        y.right = node;
+      }
+
+      node.color = "RED";
+      this.insertFixup(node);
+    }
+
+    // 插入修复
+    insertFixup(z) {
+      while (z.parent && z.parent.color === "RED") {
+        if (z.parent === z.parent.parent.left) {
+          let y = z.parent.parent.right;
+          if (y.color === "RED") {
+            z.parent.color = "BLACK";
+            y.color = "BLACK";
+            z.parent.parent.color = "RED";
+            z = z.parent.parent;
+          } else {
+            if (z === z.parent.right) {
+              z = z.parent;
+              this.leftRotate(z);
+            }
+            z.parent.color = "BLACK";
+            z.parent.parent.color = "RED";
+            this.rightRotate(z.parent.parent);
+          }
+        } else {
+          let y = z.parent.parent.left;
+          if (y.color === "RED") {
+            z.parent.color = "BLACK";
+            y.color = "BLACK";
+            z.parent.parent.color = "RED";
+            z = z.parent.parent;
+          } else {
+            if (z === z.parent.left) {
+              z = z.parent;
+              this.rightRotate(z);
+            }
+            z.parent.color = "BLACK";
+            z.parent.parent.color = "RED";
+            this.leftRotate(z.parent.parent);
+          }
+        }
+      }
+      this.root.color = "BLACK";
+    }
+
+    // 找最小值（辅助删除）
+    minimum(node) {
+      while (node.left !== this.NIL) node = node.left;
+      return node;
+    }
+
+    // 删除
+    delete(key) {
+      let z = this.root;
+      while (z !== this.NIL && z.key !== key) {
+        if (key < z.key) z = z.left;
+        else z = z.right;
+      }
+      if (z === this.NIL) return; // 没找到
+
+      let y = z;
+      let yOriginalColor = y.color;
+      let x;
+
+      if (z.left === this.NIL) {
+        x = z.right;
+        this.transplant(z, z.right);
+      } else if (z.right === this.NIL) {
+        x = z.left;
+        this.transplant(z, z.left);
+      } else {
+        y = this.minimum(z.right);
+        yOriginalColor = y.color;
+        x = y.right;
+        if (y.parent === z) {
+          x.parent = y;
+        } else {
+          this.transplant(y, y.right);
+          y.right = z.right;
+          y.right.parent = y;
+        }
+        this.transplant(z, y);
+        y.left = z.left;
+        y.left.parent = y;
+        y.color = z.color;
+      }
+
+      if (yOriginalColor === "BLACK") this.deleteFixup(x);
+    }
+
+    // 节点替换（辅助删除）
+    transplant(u, v) {
+      if (u.parent === null) {
+        this.root = v;
+      } else if (u === u.parent.left) {
+        u.parent.left = v;
+      } else {
+        u.parent.right = v;
+      }
+      v.parent = u.parent;
+    }
+    // 删除修复
+    deleteFixup(x) {
+      while (x !== this.root && x.color === "BLACK") {
+        if (x === x.parent.left) {
+          let w = x.parent.right;
+          if (w.color === "RED") {
+            w.color = "BLACK";
+            x.parent.color = "RED";
+            this.leftRotate(x.parent);
+            w = x.parent.right;
+          }
+          if (w.left.color === "BLACK" && w.right.color === "BLACK") {
+            w.color = "RED";
+            x = x.parent;
+          } else {
+            if (w.right.color === "BLACK") {
+              w.left.color = "BLACK";
+              w.color = "RED";
+              this.rightRotate(w);
+              w = x.parent.right;
+            }
+            w.color = x.parent.color;
+            x.parent.color = "BLACK";
+            w.right.color = "BLACK";
+            this.leftRotate(x.parent);
+            x = this.root;
+          }
+        } else {
+          let w = x.parent.left;
+          if (w.color === "RED") {
+            w.color = "BLACK";
+            x.parent.color = "RED";
+            this.rightRotate(x.parent);
+            w = x.parent.left;
+          }
+          if (w.right.color === "BLACK" && w.left.color === "BLACK") {
+            w.color = "RED";
+            x = x.parent;
+          } else {
+            if (w.left.color === "BLACK") {
+              w.right.color = "BLACK";
+              w.color = "RED";
+              this.leftRotate(w);
+              w = x.parent.left;
+            }
+            w.color = x.parent.color;
+            x.parent.color = "BLACK";
+            w.left.color = "BLACK";
+            this.rightRotate(x.parent);
+            x = this.root;
+          }
+        }
+      }
+      x.color = "BLACK";
+    }
+
+    // 中序遍历（调试用）
+    inorder(node = this.root) {
+      if (node !== this.NIL) {
+        this.inorder(node.left);
+        console.log(node.key, node.color);
+        this.inorder(node.right);
+      }
+    }
+  }
+
+  // 测试
+  var tree = new RedBlackTree();
+  tree.insert(10);
+  tree.insert(20);
+  tree.insert(30);
+  tree.insert(15);
+  tree.insert(25);
+
+  console.log("初始树：");
+  tree.inorder();
+
+  tree.delete(20);
+  console.log("删除 20 后：");
+  tree.inorder();
+</script>

@@ -1,0 +1,254 @@
+<script>
+  class ListNode {
+    val = 0;// 3
+    next = null;
+    // 初始化对象的时候使用构造函数
+    constructor(val) {// 2
+      this.val = val // 1
+    }
+    // 3的val是列表结点ListNode的信息之一
+    // this.val对应的是3的val
+    // 1的右边的val是2里面的val
+  }
+
+  function foo(a) {
+    return this.x + a
+  }
+  // 高阶函数复习
+  foo.apply(thisArg, [argsArray])
+  // apply的主要作用是改变函数内部this的指向
+
+  foo.apply({ x: 99 }, [8])
+  // -> 107
+  // 这个函数里面的第一个参数是this的指向
+  // 调用的时候this是第一个参数，“对象”，正常参数为【8】,第一个参数为8，所以a＝8
+
+  foo.call()
+  // 明确的设定函数的this为什么
+  // 作用和apply一样，但是区别是foo.call({x: 99}, 1,2,3,1,2,1,1)
+  // 它的后面是固定数量的参数，就算有数组它也不会把数组里面的值当做参数传给它
+
+  // this是函数里的特殊/隐藏参数，它的值由函数的调用方式决定，不由函数的调用位置或声明位置决定
+  // obj.foo(1,2,3,4)正常参数是传的1,2,3,4但是foo里面还有隐藏参数this,this指向的是obj
+
+  // 当被当成某个对象的方法调用时，obj.foo(),obj['foo'],array[2],this是该对象被
+  // foo.call()/apply()/bind()时，是这三个函数的第一参数确定的
+  // 当成函数调用：foo()时，里面的this是全局作用域对象
+  // 不由函数的调用位置或声明位置决定
+  // 箭头函数里面没有this
+  // bind函数是用来绑定函数里面的this的指向
+  // bind的主要作用，1：固定this，避免this在传函数时被“丢失”.2：预设参数
+
+  // 一个类数组对象o = {0:1, 1:2, 2:5, length: 3}
+  // Array.prototype.slice.call(o)  // -> [1,2,5]
+  // 先找到slice然后再复制，因为slice只能复制数组
+  // slice会复制这个对象，slice会将这个对象当作数组来复制，所以它返回的是一个数组
+  // 无参调用slice，slice会将这个类数组对象复制一份
+  class LinkList {
+    head = null;
+    tail = null;
+    // 模拟私有属性，但不是真的私有，真正私有（+"#")
+    // 在类体中写_size = 0 (不加 this), 是新语法：类字段声明，等价于在
+    // constructor中写this._size = 0
+    _size = 0;// 公共实例字段声明（Public instance field declaration）
+    // append 和 prepend方法是属于抽象数组结构或类型LinkList的
+    // 如果要访问这个对象的字段的话，都要加一个this
+    append(val) { // 后面增加一个元素
+      // 这里开始初始化对象了
+      var node = new ListNode(val)
+      if (this.head == null) {
+        this.head = this.tail = node
+      } else {
+        this.tail.next = node
+        this.tail = node
+      }
+      this._size++
+    }
+    // 注意方法里面必须要加this,这是js2015年的新语法
+    // 不加this的话访问不到
+    prepend(val) { // 前面增加一个元素
+      var node = new ListNode(val)
+      if (this.head == null) {
+        this.head = this.tail = node
+      } else {
+        node.next = this.head
+        this.head = node
+      }
+      this._size++
+    }
+  };
+
+
+  // 如果你在构造函数里显式地返回了一个新对象，
+  // 那么 new 的结果就会变成那个新对象，你之前辛苦加工的 this 就会被扔掉
+  class TreeNode {
+    val = 0;
+    left = null;
+    right = null;
+    constructor(val) {
+      this.val = val
+    }
+  }
+  // 二叉搜索树
+  class BinarySearchTree {
+    insert(val, root = this.root) {
+      this.root = ins(this.root, val)
+      root = null;
+      function ins(root, val) {
+        if (root == null) {
+          return new TreeNode(val)
+        } else {
+          if (val < root.val) {
+            root.left = ins(root.left, val)
+          } else {
+            root.right = ins(root.right, val)
+          }
+        }
+      }
+    }
+    traverse(action) { // 中序遍历结果
+      trav(this.root, action)
+      function trav(root, action) {
+        if (root) {
+          trav(root.left, action)
+          action(root.val)
+          trav(root.right, action)
+        }
+      }
+    }
+  }
+  // 构造函数专门用来构造这一类事物的某一类的独立的个体
+
+  // 每个构造函数都有prototype属性，做为其创建的实例对象的原型
+  // 不是每个对象都有prototype属性，一般也不会给对象增加这样一个具有迷惑性的属性名
+  // 但基本每个对象都有__proto__,指向其原型
+  // 每种类型的实例都以其构造函数的prototype属性（所指向的对象）为原型
+
+  obj1 = { x: 1, y: 2 }
+
+  obj2 = { a: 3, b: 4 }
+
+  // 让obj2成为obj1的原型
+  Object.setPrototypeOf(obj1, obj2)
+  // 设定obj1的原型为obj2
+
+
+  // 原型链，prototype chain
+  // js内部执行这个操作
+  // function getPropFromObj(obj, propName) {
+  //   if(obj 自有 propName 属性) {
+  //     return obj[propName]
+  //   } else           {
+  //     if(obj 有原型对象) {
+  //       return getPropFromObj(Object.getPrototypeOf(obj), propName)
+  //     } else {
+  //       return underfined
+  //     }
+  //   }
+  // }
+  // 它是递归的
+
+  // 所有对象的原型 Object.prototype
+
+  // 判断一个值是不是数组
+  function isArray(val) {
+    // 指定这个this是由Object.prototype调用，否则它们自己会调用字符串方法
+    // 强制使用Object.prototype.toString方法，并把val作为它的this值
+    return Object.prototype.toString.call(val) === '[object Array]'
+  }
+
+  // 可枚举和不可枚举
+
+  o = { a: 1, b: 2 }
+
+  o.c = 8
+
+  // 为o这个对象定义一个不可枚举的属性
+  Object.defineProperty(o, 'ddd', {   // 属性描述符 property descriptor
+    // 可枚举性
+    enumerable: false,
+    // 属性能否被修改
+    writable: false,
+    // 是否可以重新对这个属性调用defineProperty
+    configurable: false,
+    value: 999
+  })
+
+  // Object.create() 创建有特定原型的对象，并将它的内部原型指针（__proto__)指向指定的原型
+  var protoRabbit = {
+    speak: function (line) {
+      console.log("The " + this.type + " rabbit says '" +
+        line + "'");
+    }
+  };
+
+  var killerRabbit = Object.create(protoRabbit); // 
+  killerRabbit.type = "killer";
+  killerRabbit.speak("SKREEEE!");
+  // → The killer rabbit says 'SKREEEE!'
+
+  // 原型上面添加speak方法
+  function Rabbit(type) {
+    this.type = type;
+  }
+  var killerRabbit = new Rabbit("killer");
+  // 当我用 new Rabbit（）关键字来创建实例的时候，实例的__proto__会指向Rabbit.prototype
+  // Rabbit.prototype不是Rabbit构造函数自己的原型！Rabbit自己的原型是Function.prototype
+  // Rabbit.prototype只是一个普通对象（默认继承自Object.prototype),专门用来给实例继承
+  var blackRabbit = new Rabbit("black");
+  console.log(blackRabbit.type);
+  // → black
+  // 方法放法
+  Rabbit.prototype.speak = function (line) {
+    console.log("The " + this.type + " rabbit says '" +
+      line + "'");
+  };
+  blackRabbit.speak("Doom...");
+  // → The black rabbit says 'Doom...'
+
+  // 作用域链
+
+  // 多态
+  function String(val) {
+    if (val === undefined) {
+      return 'undefined'
+    } else if (val === null) {
+      return 'null'
+    }
+    return val.toString()
+  }
+
+  function cut31(array) {
+    var a = array.length / 3 | 0
+    var b = array.length / 3 * 2 | 0
+    return array.slice(0, a).concat(array.slice(b))
+  }
+  cut31([1, 2, 3, 4, 5, 6, 7, 8, 9])
+  // -> [1,2,3,7,8,9]
+  cut31('123456789')
+  // -> '123789'
+
+  // 可以是数组，也可以是字符串
+
+  // for in  遍历对象的可枚举属性名（key)，遍历结果返回字符串类型的属性名
+  // 注意遍历数组时，for in 得到的是索引（字符串类型），而不是值
+
+  // for of  遍历可迭代对象（iterable, 比如数组、字符串、Set、Map等），结果返回的是元素的值
+
+  // new 用来调用一个构造函数，返回一个新的对象的实例
+  function Person(name, age) {
+    this.name = name
+    this.age = age
+  }
+
+  // 当写new Person("Tom")的时候，实际上发生了这几部
+  // 创建了一个空对象  var obj = {},让这个空对象的原型指向构造函数的prototype obj.__proto__ = Person.prototype
+  // 执行构造函数，把this绑定到新对象上，var result = Person.call(obj."Tom")
+  var p1 = new Person("Tom", 20)
+  console.log(p1.name) // Tom
+  console.log(p1.age) // 20
+
+
+  // new.target指向当前正在被用new调用的函数
+  // 如果一个函数在被new调用，则其内部的new.target指向它自己，否则指向空
+</script>

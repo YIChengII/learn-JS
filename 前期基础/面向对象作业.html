@@ -1,0 +1,71 @@
+<script>
+  function dataTable(data) {
+    var keys = Object.keys(data[0]);
+    var headers = keys.map(function (name) {
+      return new UnderlinedCell(new TextCell(name));
+    });
+    var body = data.map(function (row) {
+      return keys.map(function (name) {
+        return new TextCell(String(row[name]));
+      });
+    });
+    return [headers].concat(body);
+  }
+  console.log(drawTable(dataTable(MOUNTAINS)));
+                         
+  // 实现该函数，让其绘制一个跟console.table(objArray)类似的表格
+  // 返回表格的html代码
+  // 可以通过document.write(htmlCode)将其显示在页面中
+  function consoleTable(objArray) {
+    var resut = '<table>'
+    var headers = Array.from(new Set(objArray.map(object.keys).flat()))
+    result += '<tr><th>(index)</th>'
+    for (var h of header) {
+      result += '<th>' + h + '</th>'
+    }
+    result += '</th>'
+    for (var i = 0; i < objArray.length; i++) {
+      var obj = objArray[i]
+      result += '<tr><td>' + i + '</td>'
+      for (var h of headers) {
+        if (h in obj) {
+          var val = obj[h]
+          if (val == undefined) {
+            result += '<td class="gray">' + val + '</td>'
+          } else if (typeof val == 'number') {
+            result += '<td class="blue">' + val + '</td>'
+          } else if (typeof val == 'string') {
+            result += '<td class="red">"' + val + '"</td>'
+          } else {
+            result += '<td>' + val + '</td>'
+          }
+        } else {
+          result += '<td></td>'
+        }
+      }
+      result += '</tr>'
+    }
+    return result
+  }
+
+  [{a:1,b:2}, {b:4,a:4},{b:3,c:5}].map(it => Object.keys(it)).flat()
+  // -> ['a', 'b', 'b', 'a', 'b', 'c']
+
+  Array.from(new Set([1,1,1,1,1,1,2,2,2,2,2,2]))
+
+  // -> [1,2]
+</script>
+
+<style>
+  .red {
+    color: red;
+  }
+
+  .bule {
+    color: blue;
+  }
+
+  .gray {
+    color: gray;
+  }
+</style>

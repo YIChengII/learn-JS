@@ -1,0 +1,88 @@
+<script>
+  var num = +prompt()
+  var temp = num
+  var n = 0
+
+  var t = temp 
+  while (t > 0) {
+    n++
+    t = Math.floor(t / 10)
+  }
+  var sum = 0
+  var x = num
+  while (x > 0) {
+    var digit = x % 10
+    var power = 1
+    for (var i = 0; i < n; i++) {
+      power *= digit
+    }
+    sum += power
+    x = Math.floor(x / 10)
+  }
+
+  if (sum == num) {
+    console.log(num + '是水仙花数')
+  } else {
+    console.log(num + '不是水仙花数')
+  } 
+
+  for (var num = 1; num < 10000; num++) {
+    var temp = num
+    var n = 0
+    var t = temp
+    while (t > 0) {
+      n++
+      t = Math.floor(t / 10)
+    }
+    var sum = 0
+    var x = num
+    while (x > 0) {
+      var digit = x % 10
+      var power = 1
+      for (var i = 0; i < n; i++) {
+        power *= digit
+      }
+      sum += power
+      x = Math.floor(x / 10)
+    }
+    if (sum == num) {
+    console.log(num + '是水仙花数')
+    }
+  }
+
+
+    
+</script>
+未通过的可以hover查看原因
+作业未上传
+以下所有“是否”的题目都输出YES/NO
+narcissistic: 输入一个数，判断是否是水仙花数
+narcissistics: 输出10000以内的水仙花数
+palindrom: 输入一个数，判断它数是否是回文数，如1223221
+weekday: 输入年份与月份，输出这个月的第一天是周几（视具体设定，周一可以用1或0表示）
+complete-number: 输入一个数，判断它是否是完全数（自行查相关概念）
+complete-numbers: 输出1000以内的完全数
+prime: 输入一个数，判断它是否是素数
+primes: 输出100以内的素数
+itob: 给定一个整数，将其转换为字符串：不能使用String等现成函数，但可以使用非此功能的其它函数，也不能利用任意运算符的自动类型转换
+lcf&lcm: 输入两个数，输出它们的最大公约数和最小公倍数
+sqrt: 输入一个数，求它的平方根，精确到小数点后3位，不能使用Math.sqrt
+
+
+<script>
+  // 一个简单的getter和setter
+  const user = {
+    _age: 18,
+    get age() {
+      console.log('读取 age')
+      return this._age
+    },
+    set age(value) {
+      console.log('设置 age:', value)   
+      if(value < 0) {
+        throw new Error('age 不能小于 0')
+      }
+      this._age = value
+    }
+  }
+</script>

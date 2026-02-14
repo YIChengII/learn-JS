@@ -1,0 +1,213 @@
+<script>
+// 生成长度为len的随机数组成的整数数组
+// 里面的数都小于len
+  function randomArray(len) {
+    var result = []
+    for (var i = 0; i < len; i++) {
+      result.push(Math.floor(Math.random() * len))
+    }
+    return result
+  }
+
+  // 用来判断一个数组是否是有序的（升序）
+  function isSorted(array) {
+    for (var i = 1; i < array.length; i++) {
+      if (array[i] < array[i - 1]) {
+        return false
+      }
+    }
+    return array
+  }
+
+// 插入排序
+// 第二个元素前面的第一个元素默认是有序的
+function insertSort(array) {
+  for (var i = 1; i < array.length; i++) {
+    var value = array[i]
+    for (var j = i - 1; j >= 0; j--) {
+      if (array[j] > value) {
+        array[j + 1] = array[j]
+      } else {
+        break
+      }
+    }
+    array[j + 1] = value
+  }
+  return array
+}
+// while版本
+function insertSort1(array) {
+  for (var i = 1; i < array.length; i++) {
+    var value = array[i]
+    var j = i - 1
+    while (j >= 0 && array[j] > value) {
+      array[j + 1] = array[j]
+      j--
+    }
+    array[j + 1] = value
+  }
+  return array
+}
+
+// 换位置
+  function swap(array, i, j) {
+    // 赋值，防止丢失值，如果只有array[i] = array[j]那么只是将array[j]的值赋值给了array[i]原有的值会丢失
+    var t = array[i]
+    array[i] = array[j]
+    array[j] = t
+    return array
+  }
+  /**
+   * 选择排序
+   * 每次选择数组中最小的元素依次放到数组的前面
+   * 处于前面位置上的数跟最小这个数换位置
+   */
+  function selectSort(array) {
+    for (var i = 0; i < array.length - 1; i++) {
+      var minIdx = i
+      for (var j = i + 1; j < array.length; j++) {
+        if (array[j] < array[minIdx]) {
+          minIdx = j
+        }
+      }
+      swap(array, i, minIdx)
+    }
+    return array
+  }
+  // 冒泡排序
+  function bubbleSort(array) {
+    // 冒泡排序在第一轮结束的时候它已经有序了，所以不需要排序了
+    for (var i = array.length - 2; i >= 0; i--) {
+      var swapped = false
+      for (var j = 0; j <= i; j++) {
+        if (array[j] > array[j + 1]) {
+          swap(array, j, j + 1)
+          swapped = true 
+        }
+      }
+      // 如果一轮下来没有发生交换，说明数组已经有序
+      if(swapped == false) {
+        break
+      }
+    }
+    return array
+  }
+
+  // 快一点的算法 //
+  function quickSort1(array) {
+    // 递归的边界
+    if (array.length < 2) {
+      // 如果没有slice，那么原数组会被修改 
+      return array.slice()
+    }
+    var p = array[array.length * Math.random() | 0]
+    var left = []
+    var middle = []
+    var right = []
+
+    for (var i = 0; i < array.length; i++) {
+      if (array[i] < p) {
+        left.push(array[i])
+      } else if (array[i] == p) {
+        middle.push(array[i])
+      } else if (array[i] > p) {
+        right.push(array[i])
+      }
+    }
+    // 必须需要用到变量去接住它，每一次递归返回的时候，它会执行下面的最后一个return,所以不用变量接住的话递归返回值会丢失，
+    // 连带的最后一个return执行不了，所以只会返回副本数组，也就是没有排序的array
+
+    left = quickSort1(left)
+    right = quickSort1(right)
+
+    // 每一层递归都有自己的return left.concat(middle, right),只有在它自己处理完left和right递归后才会执行
+    return left.concat(middle, right)
+  }
+  // 原地快排
+  // 在数组内部进行排序，引入哨兵！
+  function quickSort2(array, start = 0, end = array.length - 1) {
+    if (end - start < 1) {
+      return array
+    }
+    var pivotIdx = Math.random() * (end - start + 1) + start | 0
+    var pivot = array[pivotIdx] // 哨兵
+
+    swap(array, pivotIdx, end)
+
+    var i = start 
+    // 小于i的位置的元素是小于哨兵元素的元素们
+    // 大于等于i的位置放的是那些大于等于哨兵元素的元素们
+
+    for (var j = start; j < end; j++) { 
+      // 这个循环最后会让i指向它最终的位置
+      if (array[j] < pivot) {
+        swap(array, i, j)
+        i++
+      }
+    }
+
+    swap(array, i, end) 
+
+    quickSort2(array, start, i - 1)
+    quickSort2(array, i + 1, end)
+
+    return array
+
+  }
+  // 原地快排的while版本
+  function quickSortInPlice(array, left = 0, right = arrar.length - 1) {
+    if (left >= right) return
+    var pivot = array[Math.floor((left + right) / 2)]
+    var index = partition(array, left, right, pivot)
+    quickSortInPlice(array, left, index - 1)
+    quickSortInPlice(array, index, right)
+  }
+  function partition(array, left, right, pivot) {
+    while (left <= right) {
+      while (array[left] < pivot) left++
+      while (array[right] > pivot) right--
+      if(left <= right) {
+        [array[left], array[right]] = [array[right], array[left]]
+        left++
+        right--
+      }
+    }
+    return left
+  }
+
+// 归并排序
+
+  function mergeSort(array) {
+
+    if (array.length < 2) {
+      return array
+    }
+    var midIdx = array.length >> 1
+    var left = array.slice(0, midIdx)
+    var right = array.slice(midIdx)
+
+    left = mergeSort(left)
+    right = mergeSort(right)
+
+    var i = 0
+    var j = 0
+    var k = 0
+
+    while (i < left.length && right.length) {
+      if (left[i] <= right[j]) {
+        array[k++] = left[i++]
+      } else {
+        array[k++] = right[j++]
+      }
+    }
+    while (i < left.length) {
+      array[k++] = left[i++]
+    }
+    while (j < right.length) {
+      array[k++] = right[j++]
+    }
+
+
+    return array
+  }  
+</script>

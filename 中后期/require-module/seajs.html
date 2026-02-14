@@ -1,0 +1,86 @@
+
+<script>
+// 解决的问题就是
+  // 目前的同步require不能接受，有两个原因：
+  // 一个原因是所有的模块都是串行加载的，需要的时间太久
+  // 二是加载的过程中（由于是同步加载）页面还是无响应（阻塞）的
+
+
+  // 文件名到文件内容的映射
+var fileCache = Object.create(null)
+
+// 模块名到模块对象的映射
+var moduleCache = Object.create(null)
+
+// require函数运行的时候就已经是"硬盘"的状态了！！！！
+function require(fileName) {
+  if (fileName in moduleCache) {
+    return moduleCache[fileName].exports
+  }
+  var code = fileCache[fileName]
+  var modFunc = new Function('exports, module', code)
+  var module = {
+    id: fileName,
+    exports: {}
+  }
+  modFunc(module.exports, module)
+  moduleCache[fileName] = module
+  return module.exports
+}
+
+// 把某个文件作为入口加载其所有依赖并运行
+function use(fileName) {
+  if (fileName in fileCache) {
+    require(fileName)
+  } else {
+    lodaFileAndAllDeps(fileName, () => {
+      require(fileName)
+    })
+  }
+}
+
+function lodaFileAndAllDeps(fileName, callback) {
+  readFile(fileName, content => {
+    fileCache[fileName] = content
+    // 接下来，加载file所依赖的所有其它文件
+    var deps = getDeps(content) 
+    if (deps.length == 0) { // 如果当前文件已经没有依赖了，则函数运行完毕
+      callback()
+    } else {
+      var count = 0
+      deps.forEach(dep => {
+        lodaFileAndAllDeps(dep, () => {
+          count++ // 记录完成的数量
+          if(count == deps.length) {
+            callback()
+          }
+        })
+      });
+    }
+  })
+}
+
+function getDeps(fileContent) {
+  var requireCalls = fileContent.match(/require\s*\(\s*(['"])[^'"]+\1\s*\)/g)
+  if (requireCalls == null) {
+    return []
+  } else {
+    return requireCalls.map(call => {
+      return call.match(/require\s*\(\s*(['"])([^'"]+)\1\s*\)/)[2]
+    })
+  }
+}
+  // 基于回调的异步文件读取
+function readFile(fileName, callback) {
+    var xhr = new XMLHttpRequest()
+    xhr.open('get', fileName, false)
+    xhr.onload = () => {
+      callback(xhr.responseText)
+    }
+    xhr.send()
+    return xhr.responseText 
+}
+
+
+// 让浏览器也能像 Node.js 一样使用 require()、模块缓存、递归依赖解析。
+</script>

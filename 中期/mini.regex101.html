@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini Regex101</title>
+  <script src="https://cdn.tailwindcss.com/"></script>
+  <style>
+    input,
+    button {
+      outline: none;
+    }
+
+    #result strong {
+      font-weight: normal;
+
+      &:nth-of-type(odd) {
+        background-color: #9fcfff;
+      }
+
+      &:nth-of-type(even) {
+        background-color: #d5ebff;
+      }
+    }
+
+    #output {
+      position: relative;
+      width: 300px;
+      height: 200px;
+
+      >textarea,
+      #result {
+        font-family: consolas;
+        white-space: pre-wrap;
+        word-break: break-all;
+        /* position: absolute; */
+        width: 100%;
+        height: 100%;
+        border: 1px solid;
+        overflow: auto;
+        background-color: transparent;
+      }
+    }
+
+    em {
+      font-style: normal;
+    }
+
+    #result em:nth-of-type(odd) {
+      opacity: 0.5
+    }
+
+    #result em:nth-of-type(even) {
+      opacity: 0.5;
+    }
+
+    /* 一个元素里面如果有hover的元素，自己就不要框了 */
+    /* 如果一个元素里面没有被hover的元素，但其自身被hover，则显示框 */
+    em:not(:has(hover)):hover {
+      outline: 2px solid grey;
+    }
+
+    em:not(:has(:hover)):hover em {
+      background-color: inherit;
+    }
+
+    /* 实际上这个选择器：em:not(:has(:hover)):hover
+      就是只选中了被hover的元素，不选中这个元素的祖先元素
+      简单的：hover 选择器在选中一个元素的同时，也选中了其所有的祖先元素
+    */
+    [data-group-index="0"] {
+      background-color: #9fcfff;
+    }
+
+    [data-group-index="1"] {
+      background-color: #9fcba1;
+    }
+
+    [data-group-index="2"] {
+      background-color: #e0bf8b;
+    }
+
+    [data-group-index="3"] {
+      background-color: #acadfc;
+    }
+
+    [data-group-index="4"] {
+      background-color: #e1abf5;
+    }
+
+    .zero-width-assert {
+      border-left: 2px dotted magenta;
+      opacity: 1 !important;
+      margin-left: -1px;
+      margin-right: -1px;
+      position: relative;
+      z-index: 8;
+
+      &:hover {
+        box-shadow: 0 0 2px red;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <div>REGULAR EXPRESSION</div>
+    <input class="border" type="text" id="reInput" onkeyup="run()" value="(.(.)(.))(..)">
+    <button class="border" onclick="run()">RUN</button>
+    <div id="tips"></div>
+    <div>FLAGS</div>
+    <label><input type="checkbox" id="flag-g" checked> g</label>
+    <label><input type="checkbox" id="flag-m"> m</label>
+    <label><input type="checkbox" id="flag-i"> i</label>
+    <label><input type="checkbox" id="flag-y"> y</label>
+    <label><input type="checkbox" id="flag-u"> u</label>
+    <label><input type="checkbox" id="flag-s"> s</label>
+    <label><input type="checkbox" id="flag-d" checked> d</label>
+    <label><input type="checkbox" id="flag-v"> v</label>
+    <div>TEST STRING</div>
+    <div id="output">
+      <div style="border: border-red-500" onscroll="syncScrol2()" id="result"></div>
+      <textarea class="border" oninput="run()" id="testStringInput" onscroll="syncScroll()">
+        An explanation of your regex will be automatically generated as you type.
+        An explanation of your regex will be automatically generated as you type.
+        3 chickens
+        55 cows
+        100 eggs
+        1 dragonfly
+        1 pig
+      </textarea>
+    </div>
+  </div>
+  <script>
+    // 元素的id为xxx时，页面的全局就会出现一个叫xxx的变量，指向一个表示那个标签的对象
+    run()
+    /**
+     * 零宽匹配要显示出来
+     * 每个匹配的分组也要分别用不同的颜色显示出来
+     */
+    function run() {
+      var reString = reInput.value // 可以通过value属性读取到文本框的值
+      if (reString == '') {
+        return
+      }
+      // 小工具函数，将勾选的复选框转成正则表达式的标志字符串,从checkbox中获取flags
+      var flags = getFlags()
+      try {
+        // 动态创建正则对象:用户在页面输入框里面写什么，就会用new RegExp(...)创建对应的正则
+        var re = new RegExp(reString, flags) // 第一个参数是正则表达式的内容（字符串形式），第二个参数是修饰符（flags）
+      } catch (e) {
+        // 如果e这个错误对象是SyntaxError（语法错误）的实例，就在页面上显示错误信息，否则就把错误抛出去
+        if (e instanceof SyntaxError) { // instanceof判断的不是类型字符串，而是原型链关系
+          // 语法错误时显示提示
+
+          // 直接用tips代表这个,<div>
+          tips.innerHTML = e.message // innerHTML是DOM的一个属性，可以设置或获取元素的HTML内容。等于一个全局作用的提示框
+          return
+        } else {
+          throw e
+        }
+      }
+      // 清空提示信息
+      tips.innerHTML = ''
+      var testString = testStringInput.value // 获取用户输入的测试字符串
+      var html = '' // 存放最终要展示的结果
+      getMatches(re, testString, matches => {
+        var lastLastIndex = 0
+        var matchIndex = 0
+        for (var match of matches) {
+          html += testString.slice(lastLastIndex, match.index)
+          html += highlightMatch(match, matchIndex)
+          lastLastIndex = re.lastIndex
+          matchIndex++
+        }
+        html += testString.slice(lastLastIndex)
+        result.innerHTML = html
+      }, () => {
+        result.innerHTML = 'TIMEOUT'
+      })
+      var match // 存放每一次正则匹配的结果
+      var lastLastIndex = 0 // 记录上一次匹配结束的位置
+      var matchIndex = 0
+      while (match = re.exec(testString)) {
+        html += testString.slice(lastLastIndex, match.index) // 上一次循环匹配结束到这次匹配开始之间的普通文本加进来
+        // 匹配到的内容加粗高亮
+        html += highlightMatch(match)
+        lastLastIndex = re.lastIndex // 更新lastLastIndex，指向当前匹配结束位置
+
+        if (match[0].length == 0) { // 如果匹配到的字符串长度为0（零宽匹配），为了防止死循环，需要手动往后移一位
+          re.lastIndex++
+        }
+        if (re.global == false) {
+          break // 如果没有g标志，不是全局匹配，只执行一次就退出
+        }
+        matchIndex++
+      }
+      html += testString.slice(lastLastIndex) // 拼接剩余的文本
+      result.innerHTML = html  // 这里用的不是value属性，而是innerHTML属性，因为它不是文本框
+    }
+
+    function syncScroll() {
+      // 保证textarea和result两个区域同时滚动，滚动条
+      result.scrollTop = testStringInput.scrollTop
+    }
+
+    function syncScrol2() {
+      testStringInput.scrollTop = result.scrollTop
+    }
+
+    function highlightMatch(match, matchIndex) { // 高亮
+      // match[0]：整个匹配的子串
+      // match.index：匹配在原始字符串中的起始位置
+      // match.indices：捕获组的起止索引数组（需要正则加/d flag才会有）
+      // matchIndx：当前是第几个匹配
+      if (match[0].length == 0) { // 说明是零宽断言
+        var info = [
+          `Match ${matchIndex}`,
+          `-----`,
+          `Group 0: [empty string]`,
+          `Pos: ${match.index}-${match.index}`
+        ].join('\n')
+        // 如果是零宽断言，就返回一个<b>标签（里面没有内容），并加上tooltip
+        return `<b class="zero-width-assert" title="${info}"></b>`
+      }
+      // 辅助数组helper,长度是匹配字串的长度+1
+      var helper = new Array(match[0].length + 1).fill('')
+      // 用于高亮捕获组,+1的目的是字符串的每个位置上面插入<em>开始或结束标签
+      var groupIndex = 0
+      for (var index of match.indices) { // match.indices所有捕获组的起止位置数组
+        var start = index[0] - match.index // index是[startIndex, endIndex]在原始字符串里面的位置
+        var end = index[1] - match.index // 这里转化成相对位置，即相对于match.index(匹配整体的起点)
+        var info = [  // 给捕获组构造一个tooltip 
+          `Match ${matchIndex + 1}`,                        // tooltip是提示框
+          //    人类习惯从 1 开始编号；
+          // matchIndex + 1 是为了在界面上显示第 N 个匹配（1-based)
+          // 但 JavaScript 数组下标是 0 开始；
+          // 所以为了显示更自然，比如 tooltip 显示“Match 1”、“Match 2” 而不是“Match 0”、“Match 1”
+          // 就写成了 matchIndex + 1
+          `-----`,
+          `Group: ${groupIndex}`,
+          `Pos: ${index[0]}-${index[1]}`
+        ].join('\n')
+        // 在helper的start位置插入<em>开始标签
+        // 在helper的end位置插入</em>结束标签
+        // 这样当最终拼接时，能正确嵌套高亮
+        helper[start] += `<em data-group-index="${groupIndex}" title="${info}">`
+        helper[end] = '</em>' + helper[end]
+        groupIndex++
+      }
+      // 遍历匹配到的每个字符，在前面加上helper[i]里存的<em>标签
+      // 拼上这个字符本身
+      var result = ''
+      for (var i = 0; i < match[0].length; i++) {
+        result += helper[i] + match[0][i]
+      }
+      // 最后加上helper[i]，用来闭合最后可能的</em>标签
+      // 返回最终拼接的字符串
+      result += helper[i]
+      return result
+    }
+    // match.indices 是一个数组，包含所有捕获组（包括整个匹配，即 group 0）的起始和结束索引（相对于原字符串）。例如：
+    // match.indices[0]：整个匹配的[start, end]。
+    // match.indices[1]：第一个捕获组的[start, end]，以此类推。
+    // d 标志（也称为 hasIndices 标志）  启用 d 后.indices 会给出每个组的 [start, end] 索引对
+
+    function getFlags() {
+      var flags = ['g', 'm', 'i', 'y', 'u', 's', 'd', 'v']
+      return flags.filter(it => {
+        var element = document.getElementById('flag-' + it)
+        if (element.checked) { // 对于checkbox来说，checked属性可以返回它是否有被打上勾。是否被勾选
+          return true
+        } else {
+          return false
+        }
+        // join把所有勾选的flags拼成一个字符串
+      }).join('')
+    }
+
+
+    // getMatches() 用 Web Worker 异步执行正则匹配，防止卡死主线程，并支持超时中断。
+    // 异步正则匹配控制函数
+    function getMatches(re, string, f, g) {
+      var worker = new Worker('./re-exec-worker.js')
+      var done = false
+      // 当 Worker 匹配完成，会发送消息回来；
+      // 设置 done = true；
+      // 调用回调函数 f(matches)，把匹配结果交给主线程处理（比如渲染高亮）。
+      worker.addEventListener('message', e => { // 事件监听
+        done = true
+        var matches = e.data
+        f(matches)
+      })
+      setTimeout(() => { // 设置两秒的一个主线超时
+        if (done == false) {
+          worker.terminate() // 关闭worker
+          g()
+        }
+      }, 2000)
+      worker.postMessage({  // 把正则和字符串发送给 Worker 线程去执行。
+        re: re,
+        string: string,
+      })
+    }
+    // GC的意思是Garrbage Collection，垃圾回收，它负责自动回收不再被引用的内存，避免内存泄漏
+
+
+
+    // 浏览器中的 JS 默认是单线程的（UI + JS 共享一个线程）。
+    // 如果 JS 代码很耗时（比如复杂正则、数据处理、循环），会阻塞 UI。
+    // Web Worker 可以创建一个新的线程，让耗时任务在后台运行，不会阻塞主线程。
+    // worker.postMessage(data)	给 Worker 发送数据
+    // worker.terminate()	关闭 Worker 线程
+    // worker.addEventListener('message', callback)	接收 Worker 发送回来的消息
+    // worker.onmessage = callback	另一种接收消息写法
+  </script>
+
+
+  <!-- // for...of 用于对象会报错
+for (let value of obj) {  // TypeError: obj is not iterable
+  console.log(value);
+} -->
+</body>
+
+</html>

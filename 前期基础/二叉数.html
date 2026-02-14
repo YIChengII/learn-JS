@@ -1,0 +1,368 @@
+<script>
+  /**
+   * 二叉数的定义：
+   * 空
+   *    一个结点，其有一颗左子数和一课右子数
+   *    其左子树是一颗二叉树，右子树也是一颗二叉树
+   * 可以看出这个定义就是一个递归的定义
+   * 所以二叉树结构是递归的（子结构跟整体的结构是一样的）
+   * 特殊形态的二叉树
+   *    完全二叉树：
+   *      *如果知道树的层数，可以轻松计算出结点数量的范围*
+   *      从上到下从左往右，一层填满了才能填下一层（除了最后一层可以不用填满）
+   *    满二叉树：
+   *      *除了最后一层以外，每一层的结点都有两个子结点*
+   *      最后一层的结点都没有子结点
+   *      在满二叉树中，每一层的结点数量是加倍的
+   *         如果知道树的层数，可以轻松计算出结点数量
+   * 二叉树如何在代码中表示
+   *      二叉链表
+   *        类似链表的结构，每个结点都有两个指针，分别指向其左右子树
+   *    用数组的形式被表示完全二叉树
+   *        每个结点的两个子结点的位置分别为2n + 1和2n + 2
+   *        每个结点的父结点的位置在（n - 1) / 2取整
+   */
+  function f(treeStr) {
+    if (treeStr == '') {
+      return null
+    }
+    // count 用于平衡括号的数量
+    // 判断它是否是树结构
+    // 找到根结点
+    var count = 0
+    for (var i = 0; i < treeStr.length; i++) {
+      if (treeStr[i] == '(') {
+        count++
+      } else if (treeStr[i] == ')') {
+        count--
+      } else {
+        // 判断它是否是一个二叉树的左子树是否完全，左右括号
+        if (count == 0) {
+          break
+        }
+      }
+    }
+    // tree = f('((9)1(4))（这里）8(3)')
+    // 这个循环结束的时候正好i停在树的根节点
+    var rootNode = {
+      val: treeStr[i],
+      left: null,
+      right: null,
+    }
+    // 截取根节点左子树和右子树
+    var leftTreeStr = treeStr.slice(0, i)
+    var rightTreeStr = treeStr.slice(i + 1)
+    if (leftTreeStr[0] == '(') {
+      leftTreeStr = leftTreeStr.slice(1, -1)
+    }
+    if (rightTreeStr[0] == '(') {
+      rightTreeStr = rightTreeStr.slice(1, -1)
+    }
+    // 需要用变量来接住它，不然会丢失，left和right无法正确赋值，树将无法完整构造
+    rootNode.left = f(leftTreeStr)
+    rootNode.right = f(rightTreeStr)
+    return rootNode
+  }
+  // 以上代码会处理下面的代码，并返回树结构
+  tree = f('((9)1(4))8(3)')
+
+  // 将保存在array中的完全二叉给还原
+  function arrayToTree(array, rootPos = 0) { // 方便后面挂树
+    var val = array[rootPos]
+    if (val == null) {
+      return null
+    }
+    var node = {
+      val: val,
+      left: null,
+      right: null,
+    }
+    // 递归挂树
+    node.left = arrayToTree(array, rootPos * 2 + 1)
+    node.right = arrayToTree(array, rootPos * 2 + 2)
+    return node
+  }
+  // 栈帧（调用栈）：每次递归调用都会在调用栈上压入一帧。只有当该调用的左右子递归都完成并返回后，
+  // 当前帧才会 return node，随后被弹出，控制权回到父帧（父帧把返回的节点赋到 left 或 right）
+
+  // 反过来，注意是完全二叉
+  var array = []
+  function treeToArray(tree, rootPos = 0) {
+    if (tree == null) {
+      return array
+    }
+    array[rootPos] = tree.val
+    treeToArray(tree.left, rootPos * 2 + 1)
+    treeToArray(tree.right, rootPos * 2 + 2)
+    return array
+  }
+
+  // 在内部创建数组进行拼接,代码实现, 注意出来的是前序遍历
+  function treeToArray(tree) {
+    if (tree == null) return []
+    var array = [tree.val]
+    // 递归进去后递归才可以进行下一步递归
+    var leftArray = treeToArray(tree.left)// 1
+    var rightArray = treeToArray(tree.right)// 2
+    return array.concat(leftArray, rightArray)
+    // 注意，这种方法生成的数组顺序可能不是层序遍历(level-order),更像是前序遍历(pre-order)
+    // 在内部方法中，最终返回的数组需要根据树的结构动态调整，例如，对于树结构(9)1(4),内部递归可能返回[1,[9],[4]]
+    // 这样的嵌套结构，需要额外的展平(flatten)逻辑
+  }
+
+  function treeToArrayLevel(tree) { // 这个是内部创建一个数组然后实现层序遍历
+    if (tree == null) return []
+    var result = []
+    var queue = [tree] // 使用了队列
+    while (queue.length > 0) {
+      var node = queue.shift()
+      result.push(node.val)
+      if (node.left) queue.push(node.left)
+      if (node.right) queue.push(node.right)
+    }
+    return result
+  }
+
+  // 直接在函数里面传一个数组，在递归的时候可以把数组往这个array里面传
+  function treeToArray1(tree, rootPos = 0, array = []) {
+    if (tree == null) {
+      return array
+    }
+    // 如果你给递归不传这个参数那么它是读不到array里面的变量，因为是词法作用域（在哪里声明就可以读到哪里的变量），不是动态作用域
+    array[rootPos] = tree.val
+    // 它的一次调用和它的另一次调用没有关系，除非是全局作用域
+    treeToArray1(tree.left, rootPos * 2 + 1, array)
+    treeToArray1(tree.right, rootPos * 2 + 2, array)
+    return array
+  }
+  // ​当你调用一个函数时，系统会在内存中为它创建一个独立的“执行环境”，也叫栈帧（Stack Frame）。
+  // 这个栈帧包含了函数的所有局部变量、参数和返回地址。当函数执行完毕后，这个栈帧就会被销毁。
+  // ​递推过程
+  // ​你第一次调用 recursion()，系统为它创建栈帧 #1，里面包含它的局部变量。
+  // ​在 recursion() 内部，你再次调用 recursion()，系统又会为这次调用创建一个全新的、独立的栈帧 #2。
+  // ​这个栈帧 #2 拥有自己的局部变量和参数，它无法直接访问到栈帧 #1 里的任何局部变量，除非你显式地把这些变量作为参数传给它。
+  // ​这就是为什么你不能在递归函数里直接读到上一次调用中的数组变量。
+  // 每次递归调用都像是一次全新的、独立的任务，它们之间没有任何关联，除非你通过参数这座“桥梁”来传递数据。
+
+
+  // 数组返回二叉树
+  function condensedArrayToTree(array) {
+    // 必须挂在存在的结点上面
+    if (array.length == 0) {
+      return null
+    }
+    var rootVal = array[0]
+    if (rootVal == null) {
+      return null
+    }
+    var rootNode = {
+      val: rootVal,
+      left: null,
+      right: null,
+    }
+    var nodes = [rootNode]
+    // 按顺序处理结点序列，并且保存起来
+    for (var i = 1; i < array.length; i++) {
+      var currentNode = nodes.shift()
+      var val = array[i]
+      if (val != null) {
+        var node = {
+          val: val,
+          left: null,
+          right: null,
+        }
+        currentNode.left = node
+        nodes.push(node)
+      }
+      i++
+      // 有可能i++完后已经超出数组的下标，但是在js中可以忽略不记，因为读取不到值的时候js会返回undefind这个很有用
+      var val = array[i]
+      if (val != null) {
+        var node = {
+          val: val,
+          left: null,
+          right: null,
+        }
+        currentNode.right = node
+        nodes.push(node)
+      }
+    }
+    return rootNode
+  }
+
+  // 二叉树返回数组
+  function treeToCondensedArray(root) {
+    var result = []
+    if (root == null) {
+      return result
+    }
+    var nodes = [root] // 这一步是将一个对象放到一个数组里面，方便我们操作它
+    while (nodes.length > 0) {
+      var node = nodes.shift()
+      if (node == null) {
+        continue
+      } else {
+        result.push(node.val)
+        nodes.push(node.left, node.right)
+      }
+    }
+    return result
+  }
+  // 这个版本的话会将nodse数组里面的null给去掉，但是代价是循环空转了ndoes.length次
+
+// !=：先进行类型转换，再比较值是否相等。
+// !==：不进行类型转换，比较值和类型是否均不相等。
+// !===：与===相反，比较值和类型是否均不相等。
+
+  // root返回数组优化
+  function treeToCondensedArray(root) {
+    var result = []
+    if (root == null) {
+      return result
+    }
+    var nodes = [root]
+    var i = 0
+    while (i < nodes.length) {
+      var node = nodes[i++]
+      if (node == null) {
+        result.push(null)
+      } else {
+        result.push(node.val)
+        nodes.push(node.left, node.right)
+      }
+    }
+    return result
+  }
+  // 二叉数的遍历
+
+  // 先
+  function preOrderTraverse(root) {
+    if (root) {
+      console.log(root.val)
+      preOrderTraverse(root.left)
+      preOrderTraverse(root.right)
+    }
+  }
+
+
+  // 中
+  function preOrderTraverse(root) {
+    if (root) {
+      preOrderTraverse(root.left)
+      console.log(root.val)
+      preOrderTraverse(root.right)
+    }
+  }
+
+  // 后
+  function preOrderTraverse(root) {
+    if (root) {
+      preOrderTraverse(root.left)
+      preOrderTraverse(root.right)
+      console.log(root.val)
+    }
+  }
+
+  // 高阶函数
+  function preOrderTraverse(root, action) {
+    if (root) {
+      action(root.val)
+      preOrderTraverse(root.left, action)
+      preOrderTraverse(root.right, action)
+    }
+  }
+
+  function inOrderTraverse(root, action) {
+    if (root) {
+      inOrderTraverse(root.left, action)
+      action(root.val)
+      inOrderTraverse(root.right, action)
+    }
+  }
+
+  function postOrderTraverse(root, action) {
+    if (root) {
+      postOrderTraverse(root.left, action)
+      postOrderTraverse(root.right, action)
+      action(root.val)
+    }
+  }
+  function TreeNode(val = 0, left = null, right = null) {
+    return {
+      val: val,
+      left: left,
+      right: right,
+    }
+  }
+
+  // 排序二叉数 （Binary.Search Tree, BST)
+  // 二叉搜素树
+  // 每个结点的左子树中所有的结点都小于根节点
+  // 每个结点的右子树中的所有结点都大于等于根节点
+  // 对于一个排序二叉树进行中序（左中右）或反向中序（右中左）遍历，可以得到有序序列
+  // 以上全部是BST
+
+  // 将val插入到排序二叉树root中，并返回新的根结点
+  function insertIntoBST(root, val) {
+    if (root == null) {
+      return {
+        val: val,
+        left: null,
+        right: null,
+      }
+    }
+    if (val < root.val) {
+      root.left = insertIntoBST(root.left, val)
+    } else {
+      root.right = insertIntoBST(root.right, val)
+    }
+    return root
+  }
+  // 用bst实现一个排序算法
+  // 先将数组中所有的值插入到bst中
+  // 然后中序遍历bst, 并将值放回到数组中
+  // 时间复杂度：O（N*logN)前提是构建出来的二叉树是比较平衡的
+  // 空间复杂度： O（n）
+  // 但是当输入数组有序时程序构建的bst将退化为有序链表
+  // 时间复杂度将成为O（n * n）
+  // 所以我们看复杂度的时候我们需要看最差的情况
+  function bstSort(array) {
+    var root = null
+    for (var i = 0; i < array.length; i++) {
+      // 调用先序遍历函数，并返回新的结点
+      root = insertIntoBST(root, array[i])
+    }
+    var i = 0
+    // 中序遍历，调用函数
+    inOrderTraverse(root, val => {
+      array[i++] = val
+    })
+    return array
+  }
+
+  // 画出二叉树
+  function viewTree(root) {
+    var html = treeHTML(root)
+    treeView.innerHTML = html
+  }
+
+  /**
+   * bst无法保持自平衡，所以并不能实际应用
+   * 存在另外的树可以有更多的规则，能够在当保持规则时让树保持平衡
+   * 如avl树，红黑树
+   */
+  function treeHTML(root) {
+    if (root) {
+      return `<div>
+      <header style="text-align:center;">${root.val}</header>
+      <div style="display:flex">
+        <aside style="width:0;flex-grow:1;"${treeHTML(root.left)}</aside>
+        <aside style="width:0;flex-grow:1;"${treeHTML(root.right)}</aside>
+      </div>
+    </div>`
+    }
+    return ''
+  }
+
+</script>
+<div id="treeView"></div>

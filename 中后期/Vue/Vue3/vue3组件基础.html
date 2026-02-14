@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="app">
+    <span @click="inc()">{{ x }}</span>
+    <input type="text" v-model="x">
+  </div>
+  <script src="./vue-3.global.js"></script>
+  <script>
+    Vue.createApp({
+      data() {
+        return {
+          x: 1,
+          y: 2,
+        }
+      },
+      methods: {
+        inc() {
+          this.x++
+        }
+      }
+    }).mount('#app')
+    // js规范规定set必须表示布尔值表示是否成功
+  </script>
+</body>
+</html>

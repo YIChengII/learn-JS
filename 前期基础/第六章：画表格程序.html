@@ -1,0 +1,368 @@
+<script>
+  // 返回每一行的最终高度，最终高度取决于这一行每个单元格所需高度的最大值
+  // 计算每一行的最小高度
+  function rowHeights(rows) {
+    return rows.map(row => {
+      return Math.max(...row.map(cell => cell.minHeight()))
+    })
+  }
+  function rowHeights(rows) { // rows是行高数组
+    return rows.map(function (row) {
+      // 没有...的时候，reduce
+      return row.reduce(function (max, cell) {
+        // 求单元格最小高度的累计最大值，它用reduce来实现，初始值为零
+        return Math.max(max, cell.minHeight());
+      }, 0);
+    });
+  }
+
+  // 列的宽度，计算每一列的最小宽度
+  function colWidths(rows) {
+    // 拿到每一列，但是拿到的时候不要cell，只要每一列的下标（_,占位符）
+    // 这样拿到这一列
+    // map的第一个占位符接收的是rows[0]第一行里面的当前列的单元格对象
+    return rows[0].map((_, colIdx) => { // map第一行的元素,也就是第0行
+      // colIdx是确定的是哪一列，然后会拿到下面的每一行的确定的colIdx
+      // 最后对这个每一行的这一列求最大值就可以了Math.max
+      return Math.max(...rows.map(row => {
+        return row[colIdx] // 拿到每一列
+      }).map(cell => cell.minWidth())) // map函数的话就可以将每一列都使用这个最大宽度
+    })
+  }
+  function colWidths(rows) {
+    return rows[0].map(function (_, i) {
+      return rows.reduce(function (max, row) {
+        return Math.max(max, row[i].minWidth());
+      }, 0);
+    });
+  }
+  // 负责整体的渲染
+  function drawTable(rows) {
+    var heights = rowHeights(rows);
+    var widths = colWidths(rows); // 第一步
+    function drawLine(blocks, lineNo) { // 第三部被调函数，这个函数的作用是将一行字符串用空格拼接起来
+      return blocks.map(function (block) {
+        return block[lineNo];
+      }).join(" ");// 字符串用空格连接
+    }
+    // row单元格的这个行的数组，以及rowNum行标
+    function drawRow(row, rowNum) { // 第二步被调函数。row是当前行. 这个函数是辅助绘制所有行
+      // 单元格的列号（colNum）
+      var blocks = row.map(function (cell, colNum) { // 渲染块   cell是当前单元格对象
+        // heights[rowNum]这一行有多高，第几行的高度
+        // widths[colNum]单元格的列号，第几列的宽度
+        return cell.draw(widths[colNum], heights[rowNum]);
+      }); // 结果是一个大数组
+      // 拼一下block
+      return blocks[0].map(function (_, lineNo) {
+        return drawLine(blocks, lineNo); // 第三步调用。取出所有列的第lineNo行，并拼接(" ")
+      }).join("\n");
+    }
+    return rows.map(drawRow).join("\n");  // 第一步返回+调用
+  }
+  function drawTable(rows) {
+    var heights = rowHeights(rows)
+    var widths = colWidths(rows)
+    function drawLine(blocks, lineNo) {
+      return blocks.map(function (block) {
+        return block[lineNo]
+      }).join(" ");
+    }
+    function drawRow(row, rowNum) {
+      var bolcks = row.map(function (cell, colNum) {
+        return cell.draw(widths[colNum], heights[rowNum])
+      });
+      return blocks[0].map(function (_, lineNo) {
+        return drawLine(blocks, lineNo)
+      }).join("\n")
+    }
+    return rows.map(drawRow).join("\n")
+  }
+  // 以上全部是工具函数，
+  ////////////////////////////////////////////////////////////////////////
+  // 下面就是单元格类
+  // 这个就是我们的单元格
+  class TextCell {
+    constructor(text) {
+      // split把一个字符串"切碎"成数组
+      this.lines = text.split('\n')
+    }
+    minWidth() { // 单元格至少需要多宽：取所有行中最长的一行长度,lines是每一大行的大数组
+      return Math.max(...this.lines.map(line => line.length))
+    }
+    minHeight() { // 数组行数
+      return this.lines.length
+    }
+    draw(width, height) {
+      var result = []
+      // for of .... 拿到的是每一个对象的值
+      for (var i = 0; i < height; i++) {
+        var line = this.lines[i] || ''
+        // 补齐这一行
+        while (line.length < width) {
+          line += ' '
+        }
+        result.push(line)
+      }
+      return result
+    }
+  }
+
+  // 头部边框
+  class HeaderCell {
+    constructor(text) {
+      this.lines = text.split('\n')
+    }
+    minWidth() {
+      return Math.max(...this.lines.map(line => line.length)) + 2
+    }
+    minHeight() {
+      return this.lines.length + 2
+    }
+    draw(width, height) {
+      // repeat()是一个用于字符串的内置方法，可以用来重复一个字符串指定的次数
+      var border = '+' + '-'.repeat(width - 2) + '+'
+      var result = [border]
+      for (var i = 0; i < height - 2; i++) {
+        var line = this.lines[i] || ''
+        while (line.length < width - 2) {
+          line += ' '
+        }
+        result.push('|' + line + '|')
+      }
+      result.push(border)
+      return result
+    }
+  }
+  // 边框
+  class BorderCell {
+    constructor(cell) {
+      this.cell = cell
+    }
+    minWidth() {
+      return this.cell.minWidth() + 2
+    }
+    minHeight() {
+      return this.cell.minHeight() + 2
+    }
+    draw(width, height) {
+      var ret = this.cell.draw(width - 2, height - 2)
+      for (var i = 0; i < ret.length; i++) {
+        ret[i] = '|' + ret[i] + '|'
+      }
+      var upBorder = '#' + '-'.repeat(width - 2) + '#'
+      ret.unshift(upBorder)
+      ret.push(upBorder)
+      return ret
+    }
+  }
+  // 下划线
+  class UnderlinedCell {
+    constructor(textCell) {
+      this.textCell = textCell
+    }
+    minWidth() {
+      return this.textCell.minWidth()
+    }
+    minHeight() {
+      return this.textCell.minHeight() + 1
+    }
+    draw(width, height) {
+      var ret = this.textCell.draw(width, height - 1)
+      ret.push('-'.repeat(width))
+      return ret
+    }
+  }
+  // // 封装
+  // class 吹风机 {
+  //   constructor() {
+  //     this.电源 = new 电源()
+  //     this.电机 = new 电机()
+  //     this.加热器 = new 加热器()
+  //   }
+  //   start() {
+  //     this.电源.start()
+  //     this.电机.start()
+  //   }
+  //   up() {
+  //     this.加热器.start()
+  //   }
+  //   stop() {
+  //     this.加热器.stop()
+  //     this.电机.stop()
+  //     this.电源.stop()
+  //   }
+  // }
+  var table = [
+    [new TextCell('zhangshan'), new TextCell('100'), new TextCell('female'), new TextCell('female')],
+    [new HeaderCell('name'), new HeaderCell('score'), new HeaderCell('sex'), new TextCell('fe\nma\nl\ne')],
+    [new BorderCell(new UnderlinedCell(new TextCell('zhangshan'))), new TextCell('100'), new TextCell('female'), new TextCell('female')],
+    [new TextCell('wang'), new TextCell('99'), new TextCell('male'), new TextCell('female')],
+  ]
+
+  ///////////////////////////////
+  let rows = [
+    [new TextCell("A"), new TextCell("B")],
+    [new TextCell("Hello"), new TextCell("World")]
+  ];
+  // 这个表格用以上的代码实现的话结构出来是这样的
+  //  A     B    
+  // Hello World
+  ///////////////////////////////
+
+  // 注意错误的方法，1,new Text('zhangshan')，2,new Text('wang')
+  // 并不是一个我定义的TextCell和HeaderCell，所以是无效的对象，于是报错
+  // Uncaught TypeError: cell.minHeight is not a function
+
+  var s = drawTable(table)
+
+  console.log(s)
+  //////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  // repeat函数的实现
+  function repeat(string, time) {
+    var result = ""
+    for (var i = 0; i < times; i++) {
+      resutl += string
+      return result
+    }
+  }
+  // 运算符的资源是比较珍贵的
+
+  // 做ai的人是数学家，不是程序员
+  // 做金融的不是程序员，不是正经程序员
+
+
+
+  //   Object.keys({a:1,b:2,c:3})， 返回属性名，（自由属性）
+  //    ['a', 'b', 'c']
+
+  var MOUNTAINS = [
+    { name: "Kilimanjaro", height: 5895, country: "Tanzania" },
+    { name: "Everest", height: 8848, country: "Nepal" },
+    { name: "Mount Fuji", height: 3776, country: "Japan" },
+    { name: "Mont Blanc", country: "Italy/France", height: 4808 },
+    { name: "Vaalserberg", height: 323, country: "Netherlands" },
+    { name: "Denali", height: 6168, country: "United States" },
+    { name: "Popocatepetl", country: "Mexico", height: 5465 }
+  ];
+
+  class RightAlignedTextCell {
+    constructor(text) {
+      // 分割单元格三行
+      this.lines = text.split('\n')
+      //   this.minWidth = Math.max(...this.lines.map(it => it.length))
+      //   this.minHeight = this.lines.length
+    }
+    minWidth() {
+      return Math.max(...this.lines.map(it => it.length))
+    }
+    minHeight() {
+      // 返回单元格所需的最小高度（即文本行的总行数）
+      return this.lines.length
+    }
+    draw(width, height) {
+      var result = []
+      for (var i = 0; i < height; i++) {
+        var line = this.lines[i] || ''
+        while (line.length < width) {
+          line = ' ' + line
+        }
+        result.push(line)
+      }
+      return result
+    }
+  }
+  var hills = []
+
+  // 保存表头
+  var headerNames = Object.keys(MOUNTAINS[0])
+  // 单元格表头{name, height,county}
+  var header = Object.keys(MOUNTAINS[0]).map(it => new UnderlinedCell(new TextCell(it)))
+  hills.push(header)
+
+
+  for (var mountain of MOUNTAINS) {
+    var row = []
+    for (var key of headerNames) {
+      var val = mountain[key]
+      if (typeof val == 'number') {
+        row.push(new RightAlignedTextCell(String(val)))
+      } else {
+        // 只有字符串可以split,其它格式进去会报错
+        row.push(new TextCell(("" + val)))
+      }
+    }
+    hills.push(row)
+  }
+
+  console.log(hills)
+  console.log(drawTable(hills))
+
+  // get,set 方法
+  obj = {
+    a: 1, b: 2,
+    get s() {
+      return this.a + this.b
+    },
+    // 设置值
+    set s(v) {
+      this.a = v - this.b
+    },
+    get foo() { },
+    // set这里有且仅有一个参数v，没有的话会报错
+    // Unaught SyntaxError: Setter must have exactly one formal parameter
+    set foo(v) { },
+  }
+  // 以上是对象直接量的写法
+  obj.s
+  // 读的时候调get函数
+  obj.s = 888
+  // 赋值的时候调set函数
+  // 私有属性#,#只能写在class中使用
+  // JS中函数没有属于谁一说，函数就是函数，里面的this取决于调用方式
+  // 将对象中的函数读出来传给其它函数或者保存到某个变量上时，函数调用时里面的this就不再是其来源对象了
+
+  // a = [7, 8, 9]
+  // // ->[7, 8, 9]
+  // // 把a.push这个函数调用时的this设置为a
+  // [1, 2, 3, 4].forEach(a.push, a)
+  // forEach会传三个值
+  // ->undefined
+  // a
+  // -> [7, 8, 9, 1, 0, Array(4), 2, 1, Array(4), 3, 2, Array(4), 4, 3, Array(4)]
+
+  function RTextCell(text) {
+    TextCell.call(this, text); // 直接将this定在以前创造的构造函数上TextCell
+    // call继承"构造器里面的属性"（实例属性）1
+  }
+  // 定义类/构造函数的时候
+  RTextCell.prototype = Object.create(TextCell.prototype);// 继承"原型链上的方法"（共享方法）2
+  // 上一步步骤是为了下一步步骤的实施，没有上一步那么下面的代码就无法找到父类draw方法
+  RTextCell.prototype.draw = function (width, height) { // 如果父类也有同名的方法，相当于重新定义了一份实现，它可以覆盖父类
+    // 反正不会影响draw因为下面已经定义过了
+    var result = [];
+    for (var i = 0; i < height; i++) {
+      var line = this.text[i] || "";
+      result.push(repeat(" ", width - line.length) + line);
+    }
+    return result;
+  };
+  // 1和2都做到才能实现完整的"组合继承"
+
+
+  // 一个独立的类型，它的原型链直接就是来自Object.prototype
+  function UnderlinedCell(inner) {
+    this.inner = inner;
+  }
+  UnderlinedCell.prototype.minWidth = function () {
+    return this.inner.minWidth();
+  };
+  UnderlinedCell.prototype.minHeight = function () {
+    return this.inner.minHeight() + 1;
+  };
+  UnderlinedCell.prototype.draw = function (width, height) {
+    return this.inner.draw(width, height - 1)
+      .concat([repeat("-", width)]);
+  };
+</script>

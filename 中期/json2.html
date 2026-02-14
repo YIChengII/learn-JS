@@ -1,0 +1,53 @@
+
+<!-- json格式文件型下
+js object notation
+{
+  "foo": 8,
+  "bar": [1,2,3,4],
+  "baz": true,
+  "baa": {
+    "x": 9,
+    "y": 1000,
+    "z": 200,
+  }
+}
+里面不能有注释
+不能有运算
+对象的属性名都必须用双引号引起来
+数组和对象中间的分隔符不能有额外的逗号
+保持简洁
+目的是为了做数据交换 -->
+
+<script>
+  // 数组转json
+  function stringify(value) {
+    if (Array.isArray(value)) {
+      var result = '['
+      for (var i = 0; i < value.length; i++) {
+        result += stringify(value[i]) + ','
+      }
+      result += ']'
+    }
+    return result 
+  }
+  if (value !== null && typeof value == 'object') {
+    var result = '{'
+    for (var key in value) {
+      result +='"' + key + '":' + stringify(value[key]) + ','
+    }
+    result += '}'
+    return result
+  }
+  if (value == null) {
+    return 'null'
+  }
+  if (typeof value == 'number') {
+    return '' + value
+  }
+  if (typeof value == 'string') {
+    return '"' + value + '"'
+  }
+  if (typeof value == 'boolean') {
+    return '' + value
+  }
+</script>

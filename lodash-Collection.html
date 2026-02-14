@@ -1,0 +1,399 @@
+<script id="countBy">
+  function baseEach(collection, iteratee) {
+    if (collection === null) return collection
+    if (Array.isArray(collection)) {
+      for (var i = 0; i < collection.length; i++) {
+        iteratee(collection[i], i, collection)
+      }
+    } else {
+      for (var key in collection) {
+        // 这一行是防御性编程的典范
+        if (Object.prototype.hasOwnProperty.call(collection, key)) {
+          iteratee(collection[key], key, collection)
+        }
+      }
+    }
+    return collection
+  }
+
+  // 这个取的是最原子的赋值
+  function baseAssignValue(object, key, value) {
+    object[key] = value;
+  }
+
+  function baseAggregator(collection, setter, iteratee, accumulator) {
+    baseEach(collection, function (value, key, collection) {
+      var computed = iteratee(value)
+      setter(accumulator, value, computed, collection)
+    })
+    return accumulator
+  }
+
+  function createAggregator(setter, initializer) {
+    return function (collection, iteratee) {
+      var accumulator = initializer ? initializer() : {};
+      var cb = typeof iteratee === 'function'
+        ? iteratee
+        : function (value) {
+          return value[iteratee];
+        };
+
+      return baseAggregator(collection, setter, cb, accumulator);
+    };
+  }
+
+  var countBy = createAggregator(function (result, value, key) {
+    if (hasOwnProperty.call(result, key)) {
+      ++result[key];
+    } else {
+      baseAssignValue(result, key, 1);
+    }
+  });
+
+  function getIteratee() {
+    var result = lodash.iteratee || iteratee;
+    result = result === iteratee ? baseIteratee : result;
+    return arguments.length ? result(arguments[0], arguments[1]) : result;
+  }
+
+  // 简易的版本
+  function countBy(array, iteratee) {
+    const result = {}
+    if (!(array && array.length)) return result
+    const getGroupKey = (item) => {
+      if (typeof iteratee === 'function') return iteratee(item)
+      if (typeof iteratee === 'string') return item[iteratee]
+      return item
+    }
+    return array.reduce((acc, item) => {
+      const key = getGroupKey(item)
+      acc[key] = (acc[key] || 0) + 1 // 这一步很妙
+      return acc
+    }, {})
+  }
+</script>
+<script id="each -> forEach">
+  // 这个版本是不对的
+  function forEach(collection, iteratee) {
+    if (typeof iteratee !== 'function') return collection
+    if (Array.isArray(collection) && collection.length !== 0) {
+      var iteratee = ((value, index, collection) => {
+        for (var i = 0; i < collection.length; i++) {
+          value = collection[i]
+          console.log(String(value))
+        }
+      })
+    } else {
+      for (var item in collection) {
+        if (typeof item === 'string') {
+          console.log(item)
+        } else {
+          console.log(String(item))
+        }
+      }
+    }
+  }
+
+  // 接近于源码的lodash的版本
+  function forEach(collection, iteratee) {
+    if (typeof iteratee !== 'function' || iteratee == null) return collection
+    if (Array.isArray(collection)) {
+      for (var i = 0; i < collection.length; i++) {
+        if ((iteratee[i], i, collection) === false) {
+          break
+        }
+      }
+    } else {
+      var props = Object.keys(collection)
+      for (var i = 0; i < props.length; i++) {
+        var key = props[i]
+        if (iteratee(collection[key], key, collection) === false) {
+          break
+        }
+      }
+    }
+    return collection
+  }
+
+  // 如果改写我的版本的话，那么它的判断条件里面的有这一个写法需要注意
+  // collection如果是对象的话，那么
+  // Object.prototype.hasOwnProperty.call(collection, key)
+  // 这个写法避免了 var collection = Object.create(null) 创建了一个没有原型的对象
+  // 如果用户给对象定义了一个叫hasOwnProperty的属性呢？所以我们需要在祖宗那里借用
+</script>
+<script id="every">
+  function every(collection, predicate) {
+    if (collection == null) return true
+    if (predicate == null) {
+      predicate = function (value) {
+        return value
+      }
+    }
+    // 检查数组
+    if (Array.isArray(collection)) {
+      for (var i = 0; i < collection.length; i++) {
+        if (!predicate(collection[i], i, collection)) {
+          return false
+        }
+      }
+      return true
+    }
+    // 检查对象
+    for (var key in collection) {
+      if (Object.prototype.hasOwnProperty.call(collection, key)) {
+        if (!predicate(collection[key], key, collection)) {
+          return false
+        }
+      }
+    }
+    return true
+  }
+</script>
+<script id="filter">
+  function filter(collection, predicate) {
+    var result = []
+    if (collection == null) return result
+    if (predicate == null) {
+      predicate = function (value) {
+        return value
+      }
+    }
+    if (Array.isArray(collection)) {
+      for (var i = 0; i < collection.length; i++) {
+        if (predicate(collection[i], i, collection)) {
+          result.push(collection[i])
+        }
+      }
+      return result
+    }
+    for (let key in collection) {
+      if (Object.prototype.hasOwnProperty.call(collection, key)) {
+        if (predicate(collection[key], key, collection)) {
+          result.push(collection[key])
+        }
+      }
+    }
+    return result
+  }
+
+  // lodash的源码
+  function filter(collection, predicate) {
+    var func = isArray(collection) ? arrayFilter : baseFilter
+    return func(collection, getIteratee(predicate, 3))
+  }
+</script>
+<script id="find">
+  function find(collection, predicate) {
+    if (collection == null) return undefined
+    if (predicate == null) {
+      predicate = function (value) {
+        return value
+      }
+    }
+    if (Array.isArray(collection)) {
+      for (var i = 0; i < collection.length; i++) {
+        if (predicate(collection[i], i, collection)) {
+          return collection[i]
+        }
+      }
+      return undefined
+    }
+    for (var key in collection) {
+      if (Object.prototype.hasOwnProperty.call(collection, key)) {
+        if (predicate(collection[key], key, collection)) {
+          return collection[key]
+        }
+      }
+    }
+    return undefined
+  }
+
+  function find(collection, predicate, fromIndex = 0) {
+    if (collection == null || typeof predicate !== 'function') {
+      return undefined
+    }
+    const isArr = Array.isArray(collection)
+    const props = isArr ? null : Object.keys(collection)
+    const length = isArr ? collection.length : props.length
+    if (length === 0) {
+      return undefined
+    }
+    // 上面的代码是为了防止传入空数组或者空对象
+    if (Array.isArray(collection)) {
+      const length = collection.length
+      let index = fromIndex < 0 ? Math.max(length + fromIndex, 0) : fromIndex
+      for (; index < length; index++) {
+        const value = collection[index]
+        if (predicate(value, index, collection)) {
+          return value
+        }
+      }
+    } else {
+      const props = Object.keys(collection)
+      for (var i = 0; i < props.length; i++) {
+        const key = props[i]
+        const value = collection[key]
+        if (predicate(value, key, collection)) {
+          return value
+        }
+      }
+    }
+    return undefined
+  }
+  // 处理伪数组的方法
+  // != 和 !== 严格相等和严格不相等
+  // != 这个的意思就是它会尝试将两边的值转换成同一类型
+  function isArrayLike(value) {
+    return value != null && // 用这个的话至少会同时挡住null和undefined这两个祖宗
+      typeof value !== 'function' && // 在js的规范里面function也有length的属性
+      // 必须要有整数类型的length属性，排除掉{length: "3"}这种伪造的字符串长度
+      Number.isInteger(value.length) &&
+      value.length >= 0 &&
+      value.length <= Number.MAX_SAFE_INTEGER; // 确保这个length是js能稳定处理的索引极限
+  }
+  // Number.MAX_SAFE_INTEGER 的值是 $2^{53} - 1$，即 9007199254740991
+  // 超过这个数字后，JavaScript 就无法保证整数的精确性了。
+
+  // 鸭子类型
+  // 如果它走起路来像鸭子，叫起来也像鸭子，那么它就是鸭子
+
+  // 虽然字符串可以像对象一样被item[key]访问，但是它和对象完全不同，它是不可变的
+
+  // 类数组转换成真正的数组， Array.from, ...NodeList, Array.prototype.slice.call(arrayLike)
+</script>
+<script id="findLast">
+  function findLast(collection, predicate, fromIndex = 0) {
+    if (collection == null || typeof predicate !== 'funciton') {
+      return undefined
+    }
+    const isArr = Array.isArray(collection)
+    const props = isArr ? null : Object.keys(collection)
+    const length = isArr ? collection.length - 1 : props.length - 1
+    if (length = 0) {
+      return undefined
+    }
+    if (Array.isArray(collection)) {
+      const fromIndex = collection.length - 1
+      for (var i = fromIndex; i > 0; i--) {
+        const value = collection[i]
+        if (predicate(value, index, collection)) {
+          return value
+        }
+      }
+    } else {
+      const props = Object.keys(collection)
+      for (var i = props.length - 1; i > 0; i--) {
+        const key = props[i]
+        const value = collection[key]
+        if (predicate(value, key, collection)) {
+          return value
+        }
+      }
+    }
+    return undefined
+  }
+</script>
+<script id="flatMap">
+  function flatMap(collection, iteratee) {
+    var result = []
+    if (collection == null || typeof iteratee !== 'function') {
+      return result
+    }
+    // outer
+    const isArr = Array.isArray(collection)
+    const values = isArr ? collection : Object.values(collection)
+    const val = isArr ? null : Object.values(collection)
+    const length = isArr ? collection.length : val.length
+    // 下面是outer的扩展的写法，可以处理一下null的特殊的问题
+    // 下面的代码是为了防止在极端的环境下，collection的状态在执行过程中由于某些奇怪的原因（如闭包，并发修改
+    // 等）发生了一丁点的变化
+    const iterable = Array.isArray(collection) ? collection : Object.values(collection || {})
+    const length1 = iterable.length
+    // lodash库里面的话他们会极力的避免手动给变量赋值为null
+    // 这种写法的话就是极大的程度上避免掉了null值得额外得附加的条件
+
+    if (length == 0) {
+      return result
+    }
+    for (var i = 0; i < values.length; i++) {
+      const value = values[i]
+      const mapped = iteratee(value, i, collection)
+      if (Array.isArray(mapped)) {
+        result.push(...mapped)
+      } else {
+        result.push(mapped)
+      }
+    }
+    return result
+  }
+
+  // 编程届有一句名言：发明null是一个价值10亿美元的错误
+</script>
+<script id="flatMapDeep">
+  // 这个版本的逻辑有点太死板
+  function flatMapDeep(collection, iteratee) {
+    var obj = {}
+    var result = []
+    if (collection == null) return result
+    if (iteratee !== 'function') return collection
+    const iterable = Array.isArray(collection) ? collection : Object.values(collection || {})
+    const length = iterable.length
+    if (length == 0) {
+      return []
+    }
+    if (Array.isArray(collection)) {
+      for (var item of collection) {
+        if (Array.isArray(item)) {
+          result
+        }
+      }
+    }
+  }
+
+
+  function flatMapDeep(collection, iteratee) {
+    if (collection == null) return []
+    if (typeof iteratee !== 'function') return [collection] // 通常返回包装后的数组
+    const iterable = Array.isArray(collection) ? collection : Object.values(collection)
+    return flatMapDeep(iterable, iteratee)
+  }
+  function baseFlatten(array) {
+    var result = []
+    for (const item of array) {
+      if (Array.isArray(item)) {
+        result.push(...baseFlatten(item))
+      } else {
+        result.push(item)
+      }
+    }
+    return result
+  }
+  function flatMapDeep(collection, iteratee) {
+    if (collection == null) return [];
+
+    // 第一步：Map（执行你的加工函数）
+    // 无论加工后返回的是不是数组，我们先拿到一个集合
+    const mapped = Array.isArray(collection)
+      ? collection.map(iteratee)
+      : Object.values(collection).map(iteratee);
+
+    // 第二步：Deep Flatten（深层压平）
+    return baseFlatten(mapped);
+  }
+  Object.defineProperty('对象', '属性名', '描述对象')
+  Object.defineProperty(obj, 'a', {
+    value: 1
+  })
+  // {
+  //   value: 10,
+  //   writable: false,
+  //   enumerable: false,
+  //   configurable: false
+  // }
+  // 它的默值的话是false，
+</script>
+<script id="flatMapDepth">
+  function flatMapDepth(collection, iteratee, depth) {
+    
+  }
+</script>

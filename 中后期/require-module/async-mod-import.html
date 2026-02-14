@@ -1,0 +1,11 @@
+<script type="module">
+  import * as test from './async-module.js' // 这个语句会提前
+  console.log(test)
+
+  setTimeout(() => {
+    console.log(test)
+  }, 11000);  
+</script>
+
+
+灵活巧妙的安排时间，也能更早的完成异步任务

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://unpkg.com/vue@2/dist/vue.min.js"></script>
+  <!-- 引入放在head里面的优点就是尽早开始下载和解析Vue,代码执行更快    阻塞html渲染
+       放在body之前，不阻塞html渲染，先显示内容再执行JS               Vue加载稍晚 -->
+</head>
+
+<body> 
+  <div id="app">
+    <button v-bind:disabled="isButtonDisabled">Button</button>
+    <!-- HTML 的 disabled 属性是“存在即禁用”
+         所以html会将这个属性渲染成disabled = "disabled"
+         false的话就会完全移除这个属性 -->
+    {{ message }}
+  </div>
+  <div id="app-2">
+    <p v-if="seen">现在你看到我了</p>
+    <span v-bind:title="message">
+      鼠标悬停几秒钟查看此处动态绑定的提示信息！
+    </span>
+  </div>
+  <div id="app-3">
+    <p v-if="seen">现在你看到我了</p>
+  </div>
+  <div id="app-4">
+    <ol>
+      <li v-for="todo in todos">
+        Message:{{ todo.text }}
+      </li>
+    </ol>
+  </div>
+  <div id="app-5">
+    <p>{{ message }}</p>
+    <button v-on:click="reverseMessage">反转消息</button>
+  </div>
+  <div id="app-6">
+    <p>{{ message }}</p>
+    <input v-model="message">
+  </div>
+  <div id="example">
+    <p>Original message: "{{ message }}"</p>
+    <p>Computed reversed message: "{{ reversedMessage }}"</p>
+  </div>
+  <div id="app-7">
+    <span>{{ x }}</span>
+    <button-counter :start="4", :step="3"></button-counter>
+    <button-counter :step="2"></button-counter>
+    <button-counter :start="x"></button-counter>
+  </div>
+</body>
+<script>
+  var app = new Vue({
+    el: '#app',
+    data: {
+      isButtonDisabled: false,
+      message: 'Hello Vue!'
+    }
+  })
+  var app2 = new Vue({
+    el: '#app-2',
+    data: {
+      seen: true,// 变成true的话将会在渲染界面显示，反之false的话会不显示
+      message: '页面加载于 ' + new Date().toLocaleString()
+    }
+  })
+  var app3 = new Vue({
+    el: '#app-3',
+    data: {
+      seen: true
+    }
+  })
+  var app4 = new Vue({
+    el: '#app-4',
+    data: {
+      todos: [
+        { text: '学习 JavaScript' },
+        { text: '学习 Vue' },
+        { text: '整个牛项目' }
+      ]
+    }
+  })
+  var app5 = new Vue({
+    el: '#app-5',
+    data: {
+      message: 'Hello Vue.js!'
+    },
+    methods: {
+      reverseMessage: function () {
+        this.message = this.message.split('').reverse().join('')
+        // join函数的话，可迭代对象必须是字符串
+      }
+    }
+  })
+  var app6 = new Vue({
+    el: '#app-6',
+    data: {
+      message: 'Hello Vue'
+    }
+  })
+  var vm = new Vue({
+    el: '#example',
+    data: {
+      message: 'Hello',
+    },
+    computed: {
+      reversedMessage: function () {
+        return this.message.split('').reverse().join('')
+        // 不同的是它是响应式依赖来进行缓存的，所以多次访问的话会立即返回之前的计算结果
+        // 所以它不会再次执行此函数
+      }
+    }
+  })
+
+  Vue.component('button-counter', {
+    // props: ['start', 'step'],
+    props: {
+      start: Number,
+      step: Number,
+    },
+    template: `
+      <div>
+        <button @click="dec">-</button>
+        <span>{{ count }}</span>
+        <button @click="inc">+<button>
+      </div>
+    `,
+    data() {
+      return {  
+        count: this.start || 0
+      }
+    },
+    methods: {
+      dec() {
+        this.count -= this.step || 1
+      },
+      inc() {
+        this.count += this.step || 1
+      }
+    }
+  })
+  var app = new Vue({ // 根组件
+    el: '#app-7',
+    data() {
+      return {
+        x: 5
+      }
+    }
+  })
+  //   data: {
+  //   newTodoText: '',             // 新增待办事项的输入框内容（初始为空）
+  //   visitCount: 0,               // 页面访问/打开次数计数器（初始为 0）
+  //   hideCompletedTodos: false,   // 是否隐藏已完成的待办事项（初始不隐藏）
+  //   todos: [],                   // 待办事项列表（初始为空数组）
+  //   error: null                  // 错误信息（初始没有错误）
+
+  // newTodoTextString''用户在输入框里输入的新待办事项文字。
+  // 当用户点击“添加”按钮时，会把这个值取出来加到 todos 里，然后清空输入框。
+  // 空字符串代表“输入框一开始是空的”，符合用户体验。
+  // visitCountNumber0记录用户打开/访问这个页面的次数。
+  // 可能用于：显示“欢迎第 X 次访问”、统计使用频率、做一些小游戏元素等。从 0 开始计数是最自然的起点。
+  // hideCompletedTodosBooleanfalse控制是否在列表中隐藏“已完成”的待办事项。
+  // 通常对应一个复选框或开关：
+  // √ 隐藏已完成   →  true
+  // □ 显示全部   →  false默认显示所有事项（不隐藏），更友好。
+  // todosArray[]存放所有待办事项的数组。
+  // 每项通常是一个对象，例如：
+  // { id: 1, text: '买牛奶', done: false }空数组代表“刚开始没有任何待办事项”。errorAnynull用来存放错误消息或错误状态。
+  // 常见用法：
+  // - 输入为空时：error = '请输入待办事项'
+  // - 添加失败时：error = '添加失败，请重试'
+  // 然后在模板用 v-if 显示红色提示。null 表示“目前没有错误”，很干净。
+
+  // .prevent阻止默认行为event.preventDefault()阻止表单刷新、阻止
+  // 跳转@submit.prevent / @click.prevent.stop阻止事件冒泡（propagation）event
+  // .stopPropagation()阻止点击子元素时触发父元素的事件
+  // @click.stop（点击按钮不触发外层 div 点击）
+  // .capture使用事件捕获模式（从外到内）addEventListener(..., {capture: true})很少用，
+  // 先捕获外层再到内层@click.capture.self只在事件目标是元素本身时触发
+  // if (event.target === event.currentTarget)忽略子元素冒泡上来的事件@click.self
+  // （只点元素本身才触发）.once事件只触发一次addEventListener(..., {once: true})一次性弹窗确认、
+  // 只执行一次的按钮@click.once.passive标记为被动监听（提升滚动性能）
+  // addEventListener(..., {passive: true})移动端触摸/滚动事件（不要和 .prevent 一起用）
+  // @touchmove.passive / @scroll.passive
+
+  // 组件：
+  // 具有某种ui和功能的完整整体
+  // 这个组件又可能调用其它复杂度底一些的组件来实现自己的功能
+  // 而其它复杂度较低的组件也可能会调用复杂度更低的组件
+  // 最终实现整体功能
+
+
+  // 非常类似于函数调用其它函数来实现自己的功能
+  // 而其它函数又调用更多其它的函数
+
+  // 又类似于现实中一台机器由各个部件组成，而每个部件往往又有自己的内部构造（考虑一个吹风机或汽车等）
+  // 软件世界跟现实世界有着非常多的同构
+  // 组件化在前端仅指的是ui与功能的封装而模块就是书本第十章，一个模块可以导出任何值（或者具名的值）
+  // 其它模块可以入并使用
+
+  // 子组件：一个组件用到的所有其它组件用来实现自己的功能，这些组件都是组件的"子组件"
+  // 子元素：一个元素（或组件）出现在另一个组件的开始标签和结束标签之间，我们称它们为子元素
+
+  // attributes: html标签的属性
+  // property: dom对象的属性
+  // props: 组件接收的属性
+
+</script>
+
+</html>

@@ -1,0 +1,428 @@
+<script>
+  // 创建大数组
+  var journal = [];
+  function addEntry(events, didITurnIntoASquirrel) {
+    journal.push({
+      events: events,
+      squirrel: didITurnIntoASquirrel
+    });
+  }
+  // 记录数据
+  addEntry(["work", "touched tree", "pizza", "running", "television"], false);
+  addEntry(["work", "ice cream", "cauliflower", "lasagna", "touched tree", "brushed teeth"], false);
+  addEntry(["weekend", "cycling", "break", "peanuts", "beer"], true);
+
+  // 结果数组
+  var JOURNAL = [
+    { "events": ["carrot", "exercise", "weekend"], "squirrel": false },
+    { "events": ["bread", "pudding", "brushed teeth", "weekend", "touched tree"], "squirrel": false },
+    { "events": ["carrot", "nachos", "brushed teeth", "cycling", "weekend"], "squirrel": false },
+    { "events": ["brussel sprouts", "ice cream", "brushed teeth", "computer", "weekend"], "squirrel": false },
+    { "events": ["potatoes", "candy", "brushed teeth", "exercise", "weekend", "dentist"], "squirrel": false },
+    { "events": ["brussel sprouts", "pudding", "brushed teeth", "running", "weekend"], "squirrel": false },
+    { "events": ["pizza", "brushed teeth", "computer", "work", "touched tree"], "squirrel": false },
+    { "events": ["bread", "beer", "brushed teeth", "cycling", "work"], "squirrel": false },
+    { "events": ["cauliflower", "brushed teeth", "work"], "squirrel": false },
+    { "events": ["pizza", "brushed teeth", "cycling", "work"], "squirrel": false },
+    { "events": ["lasagna", "nachos", "brushed teeth", "work"], "squirrel": false },
+    { "events": ["brushed teeth", "weekend", "touched tree"], "squirrel": false },
+    { "events": ["lettuce", "brushed teeth", "television", "weekend"], "squirrel": false },
+    { "events": ["spaghetti", "brushed teeth", "work"], "squirrel": false },
+    { "events": ["brushed teeth", "computer", "work"], "squirrel": false },
+    { "events": ["lettuce", "nachos", "brushed teeth", "work"], "squirrel": false },
+    { "events": ["carrot", "brushed teeth", "running", "work"], "squirrel": false },
+    { "events": ["brushed teeth", "work"], "squirrel": false },
+    { "events": ["cauliflower", "reading", "weekend"], "squirrel": false },
+    { "events": ["bread", "brushed teeth", "weekend"], "squirrel": false },
+    { "events": ["lasagna", "brushed teeth", "exercise", "work"], "squirrel": false },
+    { "events": ["spaghetti", "brushed teeth", "reading", "work"], "squirrel": false },
+    { "events": ["carrot", "ice cream", "brushed teeth", "television", "work"], "squirrel": false },
+    { "events": ["spaghetti", "nachos", "work"], "squirrel": false },
+    { "events": ["cauliflower", "ice cream", "brushed teeth", "cycling", "work"], "squirrel": false },
+    { "events": ["spaghetti", "peanuts", "computer", "weekend"], "squirrel": true },
+    { "events": ["potatoes", "ice cream", "brushed teeth", "computer", "weekend"], "squirrel": false },
+    { "events": ["potatoes", "ice cream", "brushed teeth", "work"], "squirrel": false },
+    { "events": ["peanuts", "brushed teeth", "running", "work"], "squirrel": false },
+    { "events": ["potatoes", "exercise", "work"], "squirrel": false },
+    { "events": ["pizza", "ice cream", "computer", "work"], "squirrel": false },
+    { "events": ["lasagna", "ice cream", "work"], "squirrel": false },
+    { "events": ["cauliflower", "candy", "reading", "weekend"], "squirrel": false },
+    { "events": ["lasagna", "nachos", "brushed teeth", "running", "weekend"], "squirrel": false },
+    { "events": ["potatoes", "brushed teeth", "work"], "squirrel": false },
+    { "events": ["carrot", "work"], "squirrel": false },
+    { "events": ["pizza", "beer", "work", "dentist"], "squirrel": false },
+    { "events": ["lasagna", "pudding", "cycling", "work"], "squirrel": false },
+    { "events": ["spaghetti", "brushed teeth", "reading", "work"], "squirrel": false },
+    { "events": ["spaghetti", "pudding", "television", "weekend"], "squirrel": false },
+    { "events": ["bread", "brushed teeth", "exercise", "weekend"], "squirrel": false },
+    { "events": ["lasagna", "peanuts", "work"], "squirrel": true },
+    { "events": ["pizza", "work"], "squirrel": false },
+    { "events": ["potatoes", "exercise", "work"], "squirrel": false },
+    { "events": ["brushed teeth", "exercise", "work"], "squirrel": false },
+    { "events": ["spaghetti", "brushed teeth", "television", "work"], "squirrel": false },
+    { "events": ["pizza", "cycling", "weekend"], "squirrel": false },
+    { "events": ["carrot", "brushed teeth", "weekend"], "squirrel": false },
+    { "events": ["carrot", "beer", "brushed teeth", "work"], "squirrel": false },
+    { "events": ["pizza", "peanuts", "candy", "work"], "squirrel": true },
+    { "events": ["carrot", "peanuts", "brushed teeth", "reading", "work"], "squirrel": false },
+    { "events": ["potatoes", "peanuts", "brushed teeth", "work"], "squirrel": false },
+    { "events": ["carrot", "nachos", "brushed teeth", "exercise", "work"], "squirrel": false },
+    { "events": ["pizza", "peanuts", "brushed teeth", "television", "weekend"], "squirrel": false },
+    { "events": ["lasagna", "brushed teeth", "cycling", "weekend"], "squirrel": false },
+    { "events": ["cauliflower", "peanuts", "brushed teeth", "computer", "work", "touched tree"], "squirrel": false },
+    { "events": ["lettuce", "brushed teeth", "television", "work"], "squirrel": false },
+    { "events": ["potatoes", "brushed teeth", "computer", "work"], "squirrel": false },
+    { "events": ["bread", "candy", "work"], "squirrel": false },
+    { "events": ["potatoes", "nachos", "work"], "squirrel": false },
+    { "events": ["carrot", "pudding", "brushed teeth", "weekend"], "squirrel": false },
+    { "events": ["carrot", "brushed teeth", "exercise", "weekend", "touched tree"], "squirrel": false },
+    { "events": ["brussel sprouts", "running", "work"], "squirrel": false },
+    { "events": ["brushed teeth", "work"], "squirrel": false },
+    { "events": ["lettuce", "brushed teeth", "running", "work"], "squirrel": false },
+    { "events": ["candy", "brushed teeth", "work"], "squirrel": false },
+    { "events": ["brussel sprouts", "brushed teeth", "computer", "work"], "squirrel": false },
+    { "events": ["bread", "brushed teeth", "weekend"], "squirrel": false },
+    { "events": ["cauliflower", "brushed teeth", "weekend"], "squirrel": false },
+    { "events": ["spaghetti", "candy", "television", "work", "touched tree"], "squirrel": false },
+    { "events": ["carrot", "pudding", "brushed teeth", "work"], "squirrel": false },
+    { "events": ["lettuce", "brushed teeth", "work"], "squirrel": false },
+    { "events": ["carrot", "ice cream", "brushed teeth", "cycling", "work"], "squirrel": false },
+    { "events": ["pizza", "brushed teeth", "work"], "squirrel": false },
+    { "events": ["spaghetti", "peanuts", "exercise", "weekend"], "squirrel": true },
+    { "events": ["bread", "beer", "computer", "weekend", "touched tree"], "squirrel": false },
+    { "events": ["brushed teeth", "running", "work"], "squirrel": false },
+    { "events": ["lettuce", "peanuts", "brushed teeth", "work", "touched tree"], "squirrel": false },
+    { "events": ["lasagna", "brushed teeth", "television", "work"], "squirrel": false },
+    { "events": ["cauliflower", "brushed teeth", "running", "work"], "squirrel": false },
+    { "events": ["carrot", "brushed teeth", "running", "work"], "squirrel": false },
+    { "events": ["carrot", "reading", "weekend"], "squirrel": false },
+    { "events": ["carrot", "peanuts", "reading", "weekend"], "squirrel": true },
+    { "events": ["potatoes", "brushed teeth", "running", "work"], "squirrel": false },
+    { "events": ["lasagna", "ice cream", "work", "touched tree"], "squirrel": false },
+    { "events": ["cauliflower", "peanuts", "brushed teeth", "cycling", "work"], "squirrel": false },
+    { "events": ["pizza", "brushed teeth", "running", "work"], "squirrel": false },
+    { "events": ["lettuce", "brushed teeth", "work"], "squirrel": false },
+    { "events": ["bread", "brushed teeth", "television", "weekend"], "squirrel": false },
+    { "events": ["cauliflower", "peanuts", "brushed teeth", "weekend"], "squirrel": false }
+  ];
+  /**
+   * table = [[76, 9],[4, 1]]
+   * 
+   * t[0][0]
+   * t[0][1]
+   * t[1][0]
+   * t[1][1]
+   * 
+   * t = {
+   *    "00": 76,
+   *    "01": 9,
+   *    "10": 4,
+   *    "11": 1,
+   * }
+   * 
+   * table = [76, 9, 4, 1]
+   *           0  1  2  3
+   *        数组的索引二进制
+   *          00 01 10 11
+   */
+
+
+  function phi(table) {
+    return (table[3] * table[0] - table[2] * table[1]) /
+      Math.sqrt(
+        (table[2] + table[3]) *
+        (table[0] + table[1]) *
+        (table[1] + table[3]) *
+        (table[0] + table[2]))
+  }
+
+  // 条目是否包含给定事件,判断数组中是否包含某个值
+  function hasEvent(event, entry) {
+    // 找不到的话它会返回-1
+    return entry.events.indexOf(event) !== -1;
+  }
+  // 如果这个entry.events数组中包含这个event，返回true，如果不包含则返回false
+
+  // 在现代js里面可以写成 return entry.events.includes(event)
+
+  function tableFor(event, journal) { // js书本作者代码！
+    var table = [0, 0, 0, 0];
+    for (var i = 0; i < journal.length; i++) {
+      var entry = journal[i], index = 0;
+      // 利用的是二进制的 00 01 10 11，典型的二进制编码
+      if (hasEvent(event, entry)) index += 1;
+      if (entry.squirrel) index += 2;
+      table[index] += 1;
+    }
+    return table;
+  }
+  console.log(tableFor("pizza", JOURNAL))
+
+  function tableFor(event, journal) { // 老师代码
+    var table = [0, 0, 0, 0]
+    for (var i = 0; i < journal.length; i++) {
+      var entry = journal[i]
+      var index = 0
+      if (entry.squirrel) {
+        index += 2
+      }
+      if (entry.events.includes(event)) { // 使用了includes函数，语法简洁，逻辑清楚
+        index += 1
+      }
+      table[index]++
+    }
+    return table
+  }
+
+  var phiObj = {}
+  for (var i = 0; i < JOURNAL.length; i++) {
+    var entry = JOURNAL[i]
+    for (var j = 0; j < entry.events.length; j++) {
+      var eventName = entry.events[j]
+      if (!(eventName in phiObj)) {
+        var table = tableFor(eventName, JOURNAL)
+        var p = phi(table)
+        // 每一个条目每一个事件的相关性
+        // console.log(eventName, p)
+
+        // 往phiObj这个对象里面添加key键和key值
+        phiObj[eventName] = p
+      }
+    }
+  }
+ 
+  // 遍历每一个对象的属性,也就是遍历每一各对象的key值
+  for (var e in entry) {
+    if (Math.abs(phiObj[e]) > 0.1) {
+      console.log(e, phiObj[e])
+    }
+  }
+
+  for (var i = 0; i < JOURNAL.length; i++) {
+    var entry = JOURNAL[i]
+    if (entry.events.includes('peanuts') && !entry.events.includes('brushed teeth')) {
+      entry.events.push('peanut teeth  now')
+      tableFor('peanut teeth  now', JOURNAL)
+    }
+  }
+  console.log(phi(tableFor('peanut teeth  now', JOURNAL)))
+
+
+  // indexOf 函数方法实现
+  function indexOf(array, value) {
+    for (var i = 0; i < array.length; i++) {
+      if (array[i] == value) {
+        return i
+      }
+    }
+    return -1
+  }
+  // 还有一个参数是lastindexOf()注意是从后面返回一个元素，不是从前面，返回的是正数下标
+  /*
+  indexOf查找机制是线性查找机制
+  indexOf是JS中用于查找字符串或者数组中某个元素第一次出些的位置的方法
+  注意！！！！！！！！！！！！！！！！！
+  'px'.indexOf('') // -> 0
+  'px'.indexOf('px') // -> 0
+  'flight'.indexOf('fl') == 0 // -> true
+  String.prototype.indexOf(substring) 返回 子串在原字符串中第一次出现的位置，如果不存在，返回 -1。
+  我们要检查的条件是：prefix 是否在当前字符串的开头出现。
+  如果 str.indexOf(prefix) === 0，说明 prefix 是前缀。
+  如果 !== 0，说明 prefix 不是前缀（可能出现在别的地方，或者根本不存在）。
+  */
+  // slice 函数方法实现
+  function slice(array, start, end) {
+    var result = []
+    for (var i = start; i < end; i++) {
+      result.push(array[i])
+    }
+    return result
+  }
+
+  // array.sort函数
+  array.sort([compareFunction])
+  // 如果不给参数，默认按字符串Unicode顺序排序、默认把每个数字转成字符串再排序
+  // 正确的数值排序，传入比较函数
+  // 可以传入对象
+  array.sort((a, b) => a - b) // 升序
+  array.sort((a, b) => b - a) // 降序
+  // localeComepare，按本地语言规则排序
+  // 字符串升序 (a, b) => a.str.localeComepare(b.str)
+  // 字符串降序 (a, b) => b.str.localeComepare(a.str)
+
+
+  // continue JS中的一个控制语句，用于跳过当前循环的剩余部分，直接进入下一次循环
+
+  [[x, x], x, [x, x]].flat()
+  // -> 只对数组降一维
+  [x, x, x, x, x]
+
+  // 书本作业
+  function range(start, end, step = 1) {
+    if (step === 0) throw new Error
+    const arr = [];
+    if (step > 0) {
+      for (let i = start; i <= end; i += step) arr.push(i);
+    } else {
+      for (let i = start; i >= end; i += step) arr.push(i);
+    }
+    return arr
+  }
+  function sum(Sum) {
+    return Sum.reduce((total, n) => total + n, 0)
+  }
+  function sum(Sum) {
+    var total = 0
+    for (var i = 0; i < Sum.length; i++) {
+      total += Sum[i]
+    }
+    return total
+  }
+
+  [{ a: 1, b: 2 }, { b: 4, a: 4 }, { b: 3, c: 5 }].map(it => Object.keys(it)).flat()
+  // -> ['a', 'b', 'b', 'a', 'b', 'c']
+
+  Array.from(new Set([1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2]))
+  // 相当于对这个数组进行了去重操作
+  // -> [1,2]
+
+  // 它可以把一个像数组一样的东西转成数组
+  Array.of(1, 2, 3, 4, 5)
+  // -> [1,2,3,4,5]
+
+  Array.from({ length: 2, 0: 8, 1: 5 })
+  // 有一个可以转换成数组的东西来复制一份
+  // -> [8,5]
+
+  var args = Array.from(arguments);
+  // 将类数组对象arguments转为真正的数组
+
+
+  
+  // 只要告诉我后面的函数决定的（a，b）谁大谁小
+  // 不传的话默认的是按字符串的字典序的升序传序的
+  // 升序
+  [3, 2, 1, 4, 5, 6, 4, 4, 5, 6, 9, 8, 7].sort((a, b) => { return a - b })
+
+  // 降序
+  [3, 2, 1, 4, 5, 6, 4, 4, 5, 6, 9, 8, 7].sort((a, b) => { return b - a })
+
+  // c++里面就只需要这么传
+  [3, 2, 1, 4, 5, 6, 4, 4, 5, 6, 9, 8, 7].sort((a, b) => a < b)
+  if (a < b && f(a, b)) {
+
+  }
+  // 这个条件是避免a > b的时候，传入的f(b, a)是b < a,所以这个条件不成立的话就会表示a <= b
+  if (a <= b && f(b, a) == false) {
+
+  }
+  if (a == b && f(a, b) == false && f(b, a) == false) { }
+
+  // 数组上所有的方法可以处理类数组对象
+  a = [1, 2, 3]
+
+  // 下面两个代码类似
+  a.forEach(f)
+
+  Array.prototype.forEach(arrayLike, f)
+
+  // 数组的逆序，前提条件是它必须是有序的数组
+  var array = [1, 2, 3, 4, 5]
+  var left = 0, right = array.length - 1
+  while (left < right) {
+    [array[left], array[right]] = [array[right], array[left]]
+    left++
+    right--
+  }
+  console.log(array)
+
+  // 数组的原地逆序
+  var n = +prompt()
+  var nums = []
+  for (var i = 0; i < n; i++) {
+    var m = +prompt()
+    nums.push(m)
+  }
+  var x = nums.length
+  for (var i = 0; i < Math.floor(x / 2); i++) {
+    // 临时存储前半部分的元素
+    var temp = nums[i]
+    // 对称位置的元素放在最前面，对称的数学公式
+    nums[i] = nums[x - 1 - i] 
+    // 把临时存储的值放到后面
+    nums[x - 1 - i] = temp
+  }
+
+
+  // join()是字符串的一个方法，作用是把数组里面的所有元素拼接成一个字符串
+  var arr = [1, 2, 3, 4, 5]
+  console.log(arr.join()) // -> "1,2,3,4,5" 默认用逗号分隔
+  console.log(arr.join("")) // -> "12345" 不加分隔符，直接拼接
+  console.log(arr.join("-")) // -> "1-2-3-4-5" 用-分隔
+  console.log(arr.join("|")) // -> "1|2|3|4|5"
+  // 把数组变成字符串
+  var words = ["Hello", "world"]
+  console.log(words.join(" "))  // -> "Hello world"
+  // 快速构造重复字符串
+  console.log(new Array(5).join("*")) // -> "****", 因为数组长度 - 1
+
+  // Math.abs返回一个数的绝对值
+
+
+  // Math.ceil() 函数实现
+  function myCell(x) {
+    if (x % 1 === 0) return x // 如果是整数直接返回
+    return x > 0 ? (x - x % 1 + 1) : x - x % 1
+  }
+  // 使用Math.floor反推
+  function myCell(x) {
+    // Math.floor（）函数的意思是往更小的方向靠，所以比如将x = -13.5那么Math.floor()是找更小的所以是-14
+    // 然后在前面再加一个负号那么就是一个ceil()函数的反推了
+    return -Math.floor(-x)
+  }
+
+  // split() 方法会根据指定的分隔符将字符串分割，并返回一个包含所有子串的列表。 
+  // 如果不指定分隔符，默认会使用空格作为分隔符。 代码解析： text = "Hello World, this is Python"：
+  // 定义一个字符串 text。 result = text.split()：使用 split() 方法将字符串 text 
+  // 按照空格分割成多个子串，并将结果存储在 result 列表中
+  str.split(separator, limit)
+  // 第二格参数的意义就是限制返回数组的长度
+  // 还可以正则分割
+
+  'a=1&b=2'.split('&').map(s => s.split('='))
+  // [['a', '1'], ['b', '2']]
+
+
+  // reverse()方法
+  const items = [1, 2, 3];
+  console.log(items); // [1, 2, 3]
+  items.reverse();
+  console.log(items); // [3, 2, 1]
+
+  let array1 = new Array(5).fill(0)
+  console.log(array1)
+  // -> [0,0,0,0,0]
+
+  array1.fill("hello", 2, 4)
+  console.log(array1)
+  // -> [0, 0, 'hello', 'hello', 0]
+
+
+
+  Object.hasOwnProperty(propertyName)// javaScript中用于判断对象是否包含指定自有属性（非继承属性的方法）
+  // 与in操作符的区别：in操作符会检查对象自身及原型链上的属性，而hasOwnProperty仅检查对象自身的属性
+  // 对于通过Object.create(null)创建的对象（无原型），或属性名与hasOwnProperty冲突时，需使用
+  // Object.prototype.hasOwnProperty.call(obj, propName)
+  // 现代JavaScript推荐使用Object.hasOwn()方法，语法更简洁且安全
+
+
+  /* 类型化数组：
+    类似于c语言/java/c++的原始数组：
+    一个数组中只能存在一种类型的值
+    每个值占用的空间是一样多的
+    数组长度不可变，如果空间不够了，则放弃旧的空间，申请新的空间
+    康威生命游戏中用到过类型化数组
+  */
+
+
+</script>

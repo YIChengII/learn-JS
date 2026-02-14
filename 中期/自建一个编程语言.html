@@ -1,0 +1,377 @@
+<script>
+  function parseExpression(program) {
+    program = skipSpace(program)
+    var match, expr
+    if (match = /^"([^"]*)"/.exec(program)) {    //  匹配字符串字面量,匹配以 " 开头、以 " 结尾的字符串
+      expr = { type: "value", value: match[1] }
+      // 这个返回的match里面为什么没有子字符串？只有match[0]，因为没有括号，没有捕获组
+    } else if (match = /^\d+\b/.exec(program)) {    //  匹配数字
+      expr = { type: "value", value: Number(match[0]) }
+    } else if (match = /^[^\s(),"]+/.exec(program)) {    //  匹配单词（变量名、函数名等）,禁止匹配这些字符(),"
+      expr = { type: "word", name: match[0] }
+    } else {   //  都匹配不上，抛语法错误
+      throw new SyntaxError("Unexpected syntax:" + program)
+    }
+    //  如果后面跟着“( )”，说明是调用表达式，交给 parseApply 处理
+    return parseApply(expr, program.slice(match[0].length)) // expr当前已经解析好的语法节点,
+    // rest:program.slice(match[0].length)
+  }
+  // 是一个 “抽象语法树节点（AST Node）”。
+  // 也就是说，它是对程序中某个表达式的结构化描述对象
+  // 语法结构
+
+  var match, expr
+  var match; var expr
+  var match = null, expr = null
+
+  function skipSpace(string) {  // 这个字符的作用就是去掉空白字符
+    var first = string.search(/\S/) // 任何非空白字符
+    if (first == -1) {
+      return ""
+    } else {
+      return string.slice(first) // search返回的是第一次遇见字符的下标
+    }
+  }
+
+  function parseApply(expr, program) { // 检查是否有括号
+    program = skipSpace(program)
+    if (program[0] != "(") {
+      return { expr: expr, rest: program } // 返回给上层调用者
+    }
+    // 修正：在 parseExpression 中，match 是 "define"，program.slice(match[0].length) 是 "(plusOne, ...)"，
+    // 所以 parseApply 的输入 program = "(plusOne, fun(a, +(a, 1)))"
+    // 否则说明是函数调用
+    // 完美过渡到下一行代码
+    program = skipSpace(program.slice(1))
+    expr = { type: "apply", operator: expr, args: [] }
+    while (program[0] != ")") {    // 循环解析每个参数
+      var arg = parseExpression(program)
+      expr.args.push(arg.expr)
+      program = skipSpace(arg.rest)
+      if (program[0] == ",") {
+        program = skipSpace(program.slice(1))
+      } else if (program[0] != ")") {
+        throw new SyntaxError("Expected ',' or ')'")
+      }
+    }
+    // 跳过 ')' 后继续检查是否还有嵌套调用
+    return parseApply(expr, program.slice(1)) // 递归结构啊！ 递归允许像 f()(x) 这种嵌套调用（函数返回又被调用）
+  }
+
+  // parse() 是整个解析过程的“入口”，
+  // 它把原始字符串（程序代码）变成可被解释执行的语法树（AST）
+  function parse(program) {
+    var result = parseExpression(program);
+    if (skipSpace(result.rest).length > 0) {
+      throw new SyntaxError("Unexpected text after program");
+    }
+    return result.expr;
+  }
+  console.log(parse("+(a, 10)"));
+
+  // → {type: "apply",
+  //    operator: {type: "word", name: "+"},
+  //    args: [{type: "word", name: "a"},
+  //           {type: "value", value: 10}]}
+
+  // env是环境对象（作用域）， 例
+  // {
+  //   "+": function(a, b) { return a + b; },
+  //   a: 10
+  // }
+  // 求值函数
+  function evaluate(expr, env) {
+    switch (expr.type) {
+      case "value":
+        return expr.value;
+      case "word":
+        if (expr.name in env) {
+          return env[expr.name];
+        } else {
+          throw new ReferenceError("Undefined variable:" + expr.name);
+        }
+      case "apply":
+        if (expr.operator.type == "word" && expr.operator.name in specialForms) {
+          return specialForms[expr.operator.name](expr.args, env);
+        }
+        var op = evaluate(expr.operator, env);
+        if (typeof op != "function") {
+          throw new TypeError("Applying a non-function.");
+        }
+        return op.apply(null, expr.args.map(function (arg) {
+          return evaluate(arg, env);
+        }));
+    }
+  }
+  //////////////////////////////////////////////////
+  function makeAdder(x) {
+    return function (y) {
+      return x + y;
+    };
+  }
+  const add5 = makeAdder(5);
+  console.log(add5(2)); // 输出 7
+  // 闭包复习，当makeAdder(5),  其中x被绑定为5，重要：返回的这个函数包含对其外部词法环境的引用——即它“闭合”了对 x 的引用。
+  // 闭包环境 x = 5
+
+  for (var i = 0; i < 3; i++) {
+    setTimeout(function () {
+      console.log('var i =', i);
+    }, 0);
+  }
+
+  // 第一次循环	创建函数并交给 setTimeout	i = 0	定时器只是注册了一个任务，函数还没执行
+  // 第二次循环	创建函数并交给 setTimeout	i = 1	同上
+  // 第三次循环	创建函数并交给 setTimeout	i = 2	同上
+  // 循环结束	i 变为 3，跳出循环	i = 3	此时所有 setTimeout 已经注册完毕
+
+  var specialForms = Object.create(null);  // 关键字集合
+
+  // specialForms["if"] = function (args, env) { ... }
+  // specialForms["while"] = function (args, env) { ... }
+  // specialForms["define"] = function (args, env) { ... }
+
+  // 计算 switch (表达式) 的结果
+  // 依次与每个 case 值 做 严格相等（===） 比较
+  // 如果匹配成功，执行该 case 下的语句
+  // 遇到 break 就退出整个 switch
+  // 如果都不匹配，就执行 default 块（可选）
+
+  let fruit = "apple"
+
+  switch (fruit) {
+    case "apple":
+    case "pear":
+    case "banana":
+      console.log("这是水果")
+      break
+    default:
+      console.log("不是水果")
+  }
+
+  specialForms["if"] = function (args, env) {
+    if (args.length != 3) {
+      throw new SyntaxError("Bad number of args to if");
+    }
+    if (evaluate(args[0], env) !== false) {
+      return evaluate(args[1], env);
+    } else {
+      return evaluate(args[2], env);
+    }
+  };
+  specialForms["while"] = function (args, env) {
+    if (args.length != 2) {
+      throw new SyntaxError("Bad number of args to while");
+    }
+    while (evaluate(args[0], env) !== false) {
+      evaluate(args[1], env);
+    }
+    // Since undefined does not exist in Egg, we return false,
+    // for lack of a meaningful result.
+    return false;
+  };
+  specialForms["do"] = function (args, env) {
+    var value = false;
+    args.forEach(function (arg) {
+      value = evaluate(arg, env);
+    });
+    return value;
+  };
+  specialForms["define"] = function (args, env) {
+    if (args.length != 2 || args[0].type != "word") {
+      throw new SyntaxError("Bad use of define");
+    }
+    var value = evaluate(args[1], env);
+    env[args[0].name] = value; // 相当于在env对象上面新增了一个属性
+    return value;
+  };
+  // likeJavaScript's = operator
+
+  // 输出值的方式
+  topEnv["print"] = function (value) {
+    console.log(value);
+    return value;
+  };
+
+  // 创建环境
+  var topEnv = Object.create(null);
+  topEnv["false"] = false;
+  topEnv["true"] = true;
+
+  var prog = parse("if(true, false, true)");
+  // 这个语法的意思就是  true ? false : true
+  console.log(evaluate(prog, topEnv));
+  // → false
+
+  var obj = {};
+  // 等价于：
+
+  // 复制代码
+  var obj = Object.create(Object.prototype);
+  // 也就是说，普通对象 { } 默认继承了 Object.prototype 上的属性和方法，比如：
+
+  // 复制代码
+  obj.toString    // 存在
+  obj.hasOwnProperty // 存在
+
+  var topEnv = Object.create(null);
+  // 这样创建的对象：
+  // 没有原型（topEnv.__proto__ === undefined）
+  // 不继承任何属性或方法
+  // 是一个纯净的字典（map - like 对象）
+
+  ["+", "-", "*", "/", "==", "<", ">"].forEach(function (op) {
+    topEnv[op] = new Function("a, b", "return a " + op + " b;");
+  });
+
+  function run() {
+    var env = Object.create(topEnv); // 当前运行的环境,这个就是run()调用的时候创建的空env环境，它可以在topEnv上面找
+    var program = Array.prototype.slice.call(arguments, 0).join("\n");
+    return evaluate(parse(program), env);
+  }
+
+  run("do(define(total, 0),",
+    "   define(count, 1),",
+    "   while(<(count, 11),",
+    "         do(define(total, +(total, count)),",
+    "            define(count, +(count, 1)))),",
+    "   print(total))");
+  // → 55
+
+  "print(+(5,10))"
+  //   {
+  //   type: "apply",
+  //   operator: { type: "word", name: "print" },
+  //   args: [
+  //     {
+  //       type: "apply",
+  //       operator: { type: "word", name: "+" },
+  //       args: [
+  //         { type: "value", value: 5 },
+  //         { type: "value", value: 10 }
+  //       ]
+  //     }
+  //   ]
+  // }
+
+  // 定义一个函数表达式
+  specialForms["fun"] = function (args, env) {
+    if (!args.length)
+      throw new SyntaxError("Functions need a body");
+    function name(expr) {
+      if (expr.type != "word")
+        throw new SyntaxError("Arg names must be words");
+      return expr.name;
+    }
+    var argNames = args.slice(0, args.length - 1).map(name);
+    var body = args[args.length - 1];
+    return function () {
+      if (arguments.length != argNames.length)
+        throw new TypeError("Wrong number of arguments");
+      var localEnv = Object.create(env);
+      for (var i = 0; i < arguments.length; i++)
+        localEnv[argNames[i]] = arguments[i];
+      return evaluate(body, localEnv);
+    };
+  };
+
+  run("do(define(plusOne, fun(a, +(a, 1))),",
+    "   print(plusOne(10)))");
+  // → 11
+
+  // {
+  // type: "apply",
+  // operator: { type: "word", name: "do" },
+  // args: [
+  //   {
+  //     type: "apply",
+  //     operator: { type: "word", name: "define" },
+  //     args: [
+  //       { type: "word", name: "plusOne" },
+  //       {
+  //         type: "apply",
+  //         operator: { type: "word", name: "fun" },
+  //         args: [
+  //           { type: "word", name: "a" },
+  //           {
+  //             type: "apply",
+  //             operator: { type: "word", name: "+" },
+  //             args: [
+  //               { type: "word", name: "a" },
+  //               { type: "value", value: 1 }
+  //             ]
+  //           }
+  //         ]
+  //       }
+  //     ]
+  //   },
+
+  run("do(define(pow, fun(base, exp,",
+    "     if(==(exp, 0),",
+    "        1,",
+    "        *(base, pow(base, -(exp, 1)))))),",
+    "   print(pow(2, 10)))");
+  // → 1024
+
+  //   层级	名称	职责	类比
+  // 1️⃣	parse（解析器）	          把字符串代码 →        转成语法树(AST)	“语文老师分析句子成分”
+  // 2️⃣	evaluate（求值器）	      执行语法树（AST）	    “计算器执行表达式”
+  // 3️⃣	specialForms（关键字表）	存放语言关键字的逻辑   （if、while、define、do）	“语法规则本身”
+  // 4️⃣	topEnv（全局环境）	      存放基础函数和常量	   “语言自带的工具包，比如 +, -, print”
+
+  // 再加一个最外层入口：
+  // | | run() | 把所有东西串起来：解析+执行 |
+
+  // 整个代码的意思，把输入的字符串（例如 +(a, 10)）解析成 JavaScript 对象结构，描述语法树。
+  // 输入      "+(a, 10)"
+  // 输出
+  //  {
+  //   type: "apply",
+  //   operator: { type: "word", name: "+" },
+  //   args: [
+  //     { type: "word", name: "a" },
+  //     { type: "value", value: 10 }
+  //   ]
+  // }
+
+
+
+  // 关键字	参数	功能描述	示例
+
+  // if(cond, then, else)	3个	 条件分支	                          if(==(x,10), print("yes"), print("no"))
+
+  // while(cond, body)	2个	   循环结构	                          while(<(i,10), do(print(i), define(i, +(i,1))))
+
+  // do(expr1, expr2, ...)	   任意个	顺序执行，返回最后一个结果	  do(define(x,10), print(x))
+
+  // define(name, value)	2个	 定义变量（写入当前作用域env）	      define(a, 5)s
+
+  // fun(args..., body)	n+1个	 定义函数（产生闭包）	               fun(a, b, +(a, b))
+
+
+
+  // 书本中去掉跳过注释代码的代码
+  function skipSpace(string) {
+    let i = 0;
+    while (i < string.length) {
+      const char = string[i];
+      if (/\s/.test(char)) {
+        i++;
+        continue;
+      }
+      if (char === '#') {
+        // Skip the comment until the end of the line or end of string
+        while (i < string.length && string[i] !== '\n') {
+          i++;
+        }
+        if (i < string.length && string[i] === '\n') {
+          i++; // Skip the newline as well, treating it like whitespace
+        }
+        continue;
+      }
+      // If it's neither whitespace nor a comment start, stop skipping
+      break;
+    }
+    return string.slice(i);
+  }
+</script>

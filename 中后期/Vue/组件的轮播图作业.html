@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://unpkg.com/vue@2/dist/vue.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+  <div id="app">
+    <slider :imgs="['https://www.12306.cn/index/images/abanner06.jpg',
+                    'https://www.12306.cn/index/images/abanner05.jpg', 
+                    'https://www.12306.cn/index/images/abanner02.jpg']"></slider>
+  </div>
+</body>
+<script>
+  Vue.component('slider', {
+    // 外部输入的指令
+    props: {
+      // 声明数据的规格
+      imgs: Array,
+    },
+
+    // 这个是简化后的代码
+    //     < div class= "slider-container" >
+    //     <img:src="imgs[currentIdx]" />
+
+    //     <button @click = "prev" > prev</button >
+    //     <button @click = "next" > next</button >
+
+    //     <ul>
+    //     <li v-for="(url, idx) of imgs" 
+    //         :key="url"
+    //         @click="currentIdx = idx"
+    //         :class="{'active': currentIdx == idx }">
+    //     </li>
+    //    </ul>
+    // </div >
+
+    // 外壳与长相，决定了用户最终在网页上面看到什么
+    template: `
+    <div class="w-[300px] h-[200px] relative border border-black"> 
+      <img :src="imgs[currentIdx]" class="w-full h-full"/>
+      <button @click="prev" class="absolute h-4 top-1/2">prev</button>
+      <button @click="next" class="absolute h-4 top-1/2 right-0">next</button>
+      <ul class="flex absolute bottom-0 w-full justify-center">
+        <li v-for="(url, idx) of imgs" :key="url" @click="currentIdx = idx" class="cursor-pointer w-2 h-2 m-1 rounded-full" :class="{'bg-red-500': currentIdx == idx, 'bg-slate-500': currentIdx != idx}"></li>
+      </ul>
+    </div>
+    `,
+    // 内部私有的口袋，存储组件自己管理的数据
+    data() {
+      return {
+        currentIdx: 0,
+      }
+    },
+    // 执行动作的技能
+    methods: {
+      prev() {
+        this.currentIdx--
+        if (this.currentIdx == -1) {
+          this.currentIdx = this.imgs.length - 1
+        }
+      },
+      next() {
+        this.currentIdx++
+        if (this.currentIdx == this.imgs.length) {
+          this.currentIdx = 0
+        }
+      },
+    }
+  })
+
+  var app = new Vue({
+    el: '#app',
+    data() {
+      return {
+        x: 5,
+        y: 8,
+      }
+    },
+  })
+</script>
+
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script></script>
+</head>
+<body>
+  <div id="app">
+    <h1>totds</h1>
+    <div>
+      <!-- v-show="todos.length > 0": 只有当列表里有任务时，才显示“全选”按钮。-->
+      <input type="checkbox" v-show="todos.length > 0" :checked="todos.every(it => it.completed)" @click="toggleAll()">
+      <input type="text" @keyup="addTodo($event)">
+    </div> 
+    <ul :class="`show-${visibleType}`"> <!--模板字符串插值如果 visibleType 的值是 'all'，它就拼接成 "show-all"-->
+      <!-- :class 的三元表达式:如果 todo.completed 是 true，<li> 的类名就是 completed（对应 CSS 里的灰色删除线样式）
+        。否则类名就是 active。 -->
+        <!-- li是列表项 -->
+      <li v-for="(todo,i) of todos" :calss="todo.completed ? 'completed' : 'active'" >
+        <!-- v-for: 像循环语句一样，把 todos 数组里的每一条数据都变成一个 <li> 标签。 -->
+        <input type="checkbox" v-model="todo.completed" >
+        <!-- 打勾方，用来切换任务的完成或未完成 -->
+        <input type="text" v-if="editingIdx == i" @blur="editingIdx = -1" @keyup.enter="editOk($event, todo)" :value="todo.text" type="text">
+        <!-- text文本输入框 -->
+        <!-- v-if 和 v-else 的切换:这是一个“二选一”逻辑。Vue 检查变量 editingIdx（正在编辑的索引）是否等于当前这一行的索引 i。 -->
+        <!-- 如果是：显示 <input>（输入框），让你改名字。 -->
+        <!-- 如果不是：显示 <span>（文字），双击文字会执行 editingIdx = i，从而瞬间把文字变成输入框。 -->
+        <span v-else @dblclick="editingIdx = i">{{ todo.text }}</span> <!--普通文字容器,用来展示任务内容-->
+        <!-- 实时计算: 这行代码直接在 HTML 里写了 JS 逻辑。它过滤出所有 completed 为 false（未完成）的任务，并显示它们的数量。数据一变，这里的数字会实时跳动。 -->
+        <button @click="deleteTodo(i)">x</button>
+      </li>
+    </ul>
+    <div>
+      <span>{{ todos.filter(it => it.completed == false).length }} items left</span>
+      <!-- {{}}插入值表达式,负责把JS里面的变量粘到HTML上,它会直接把变量的值"吐"在网页上面 -->
+      <div> 
+        <!-- 筛选切换（Radio Group） -->
+         <!--状态同步: 这三个单选按钮共用一个变量 visibleType。
+          当你点击 "Active" 时，visibleType 变为 'active'。
+          由于最外层的 <ul> 绑定了 :class="show-${visibleType}"，整个列表的 CSS 类名会变成 show-active。
+          配合 CSS: 此时你在 <style> 里写的 ul.show-active li.completed { display: none; } 就会生效，把已完成的任务藏起来。-->
+        <label><input type="radio" @click="visibleType = 'all'" :checked="visibleType == 'all'" name="visible-type"> All</label>
+        <label><input type="radio" @click="visibleType = 'avtive'" :checked="visibleType == 'active'" name="visible-type"> Active</label>
+        <label><input type="radio" @click="visibleType = 'co  mpleted'" :checked="visibleType == 'completed'" name="visible-type"> Completed</label>
+      </div>
+      <button v-show="todos.some(it => it.completed)" @click="clearCompleted()">clear Completed</button>
+    </div>
+  </div>
+</body>
+<script>
+  var app = new Vue ({
+    el: '#app', // 挂载点，指定Vue控制页面上的哪块区域  
+    data() { // 响应式数据源
+      return {
+        // 初始数据：任务列表数组
+        todos: [{text: 'eat', completed: false}, {text: 'sleep', completed: true}],
+        visibleType: 'all',// 当前显示的类型：all/active/completed
+        editingIdx: -1,// 记录当前正在编辑哪一项的索引，-1 表示没有在编辑
+      }
+    },
+    methods: { // 存放函数的地方
+      // 添加任务
+      addTodo(e) {
+        if(e.key == 'Enter') {// 判断是否按下回车
+          var text = e.target.value.trim()// 获取输入框的值并去空格
+          if(text) {
+            this.todos.push({
+              text: text,
+              completed: false,
+            })// 向数组添加新对象
+            e.target.value = ''// 清空输入框
+          }
+        }
+      },
+      deleteTodo(idx) {// 删除任务
+        this.todos.splice(idx, 1)// 根据索引从数组中删除 1 个元素
+      },
+      // 全选/反选逻辑
+      toggleAll() {
+        // 如果当前已经是全部完成状态，则全部改为未完成
+        if(this.todos.every(it => it.completed)) {
+          this.todos.forEach(it => {
+            it.completed = false
+          });
+        } else {
+          // 否则（只要有一个没完成），全部改为已完成
+          this.todos.forEach(it => {
+            it.completed = true 
+          })
+        }
+      },
+      clearCompleted() {  // 清除已完成
+        // 保留所有 completed 为 false 的任务，重新赋值给数组
+        this.todos = this.todos.filter(it => it.completed == false)
+      },
+      // 保存编辑
+      editOk(e, todo) {
+        todo.text = e.target.value.trim()// 更新该项的文本
+        this.editingIdx = -1// 退出编辑模式
+      }
+    }
+  })  
+  // Vue里面的for in 和 for of没有区别
+
+  // MVVM的模型就是说，数据会影响到视图，在视图上的操作最终也会影响到数据
+
+  // 为了显示而做的上一步的操作，我们叫做渲染
+
+  // 在Vue2中，v-for和v-if一起用时，for优先，相当于for套if在Vue3中是反过来的
+  // 相当于if套for，如果if的条件为假，则for是不执行的
+
+
+  // 上述的代码的渲染的流程
+  // 场景 1：你点击了任务左边的勾
+  // 数据变化：todo.completed 从 false 变成 true。
+  // Vue 反应：Vue 发现数据变了，立刻重新渲染这一行。
+  // HTML 变化：:class 重新计算，<li> 的类名变成了 completed。
+  // CSS 渲染：
+  // 你的 CSS 里有一句：.completed { text-decoration: line-through; color: gray; }（虽然你给的代码里没写这句，但通常 TodoList 都会加）。
+  // 效果：这行字瞬间变灰，并多了一条横线。
+  // 场景 2：你选择了下方的 "Active" 按钮
+  // 状态变化：变量 visibleType 变成了 'active'。
+  // HTML 变化：最外层的 <ul> 标签的 class 属性变成了 show-active。
+  // CSS 生效（最关键的一步）：
+  // 你代码里的 CSS：ul.show-active li.completed { display: none; }。
+  // 效果：所有被勾选（有 completed 类名）的任务，在网页上瞬间消失了，只剩下没勾选的。
+
+</script>
+</html>

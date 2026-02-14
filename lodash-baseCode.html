@@ -1,0 +1,252 @@
+<script id="isObjectLike">
+  // 这个底层函数的作用就是能不能像对象一样的访问属性
+  function isObjectLike(value) {
+    return value != null && typeof value === 'object'
+  }
+  isObjectLike({})        // true
+  isObjectLike([])        // true
+  isObjectLike(new Date)  // true
+  isObjectLike(/a/)       // true
+
+  isObjectLike(null)      // false（非常重要）
+  isObjectLike(undefined) // false
+  isObjectLike(1)         // false
+  isObjectLike('abc')     // false
+  isObjectLike(true)      // false
+</script>
+<script>
+  // var nativeCeil = Math.ceil,
+  //   nativeFloor = Math.floor,
+  //   nativeGetSymbols = Object.getOwnPropertySymbols,
+  //   nativeIsBuffer = Buffer ? Buffer.isBuffer : undefined,
+  //   nativeIsFinite = context.isFinite,
+  //   nativeJoin = arrayProto.join,
+  //   nativeKeys = overArg(Object.keys, Object),
+  //   nativeMax = Math.max,
+  //   nativeMin = Math.min,
+  //   nativeNow = Date.now,
+  //   nativeParseInt = context.parseInt,
+  //   nativeRandom = Math.random,
+  //   nativeReverse = arrayProto.reverse
+</script>
+<script id="isObject">
+  function isObject(value) {
+    var type = typeof value
+    return value != null && (type === 'object' || type === 'function')
+  }
+</script>
+<script id="isArrayLike">
+  function isArrayLike(value) {
+    return value != null && isLength(value.length) && !isFunction(value)
+  }
+</script>
+<script id="isIndex">
+  function isIndex(value, length) {
+    var type = typeof value
+    length = length == null ? MAX_SAFE_INTEGER : length
+    return !!length &&
+      (type == 'number' ||
+        (type != 'symbol' && reIsUint(value))) &&
+      (value > -1 && value % 1 == 0 && value < length)
+  }
+</script>
+<script id="eq">
+  // 这个函数是排除NaN
+  function eq(value, other) {
+    return value === other || (value !== value && other !== other)
+  }
+</script>
+<script id="baseSlice">
+  function baseSlice(array, start, end) {
+    var index = -1
+    var length = array.length
+    if (start < 0) {
+      start = -start > length ? 0 : (length + start)
+    }
+    end = end > length ? length : end
+    if (end < 0) {
+      end += length
+    }
+    length = start > end ? 0 : ((end - start) >>> 0)
+    start >>>= 0
+    var result = Array(length)
+    while (++index < length) {
+      result[index] = array[index + start]
+    }
+    return result
+  }
+  // Math.floor(NaN) // -> NaN
+  undefined >>> 0     // -> 0
+  NaN >>> 0          // -> 0
+  2.5 >>> 0          // -> 2
+  '2' >>> 0     // -> 2
+  // 原生的js在处理NodeList和document.querySelectorAll,会报错
+  // 原生 slice 会保留数组里的“孔洞”（Holes），比如 [1, , 3],lodash是将孔洞显示地提取为undefined 
+</script>
+<script id="isIterateeCall">
+  function isIterateeCall(value, index, object) {
+    if (!isObject(object)) {
+      return false
+    }
+    var type = typeof value
+    if (type == 'number'
+      ? (isArrayLike(object) && isIndex(index, object.length))
+      : (type == 'string' && idnex in object)
+    ) {
+      return eq(object[index], value)
+    }
+    return false
+  }
+</script>
+<script id="toInteger">
+  function toInteger(value) {
+    var result = toFinite(value)
+    remainder = result % 1
+
+    return result === reuslt ? (remainder ? result - remainder : result) : 0
+  }
+</script>
+<script id="toFinite">
+  function toFinite(value) {
+    if (!value) {
+      return value === 0 ? value : 0
+    }
+    value = toNumber(value)
+    if (value === INFINITY || value === -INFINITY) {
+      var sign = (value < 0 ? -1 : 1);
+      return sign * MAX_INTEGER;
+    }
+    return value === value ? value : 0;
+  }
+</script>
+<script id="identity">
+  function identity(value) {
+    return value;
+  }
+</script>
+<script id="arrayFilter">
+  function arrayFilter(array, predicate) {
+    var index = -1,
+      length = array == null ? 0 : array.length,
+      resIndex = 0,
+      result = [];
+    while (++index < length) {
+      var value = array[index]
+      if (predicate(value, index, array)) {
+        result[resIndex++] = value
+      }
+    }
+    return result
+  }
+</script>
+<script id="apply">
+  function apply(func, thisArg, args) {
+    switch (args.length) {
+      case 0: return func.call(thisArg)
+      case 1: return func.call(thisArg, args[0])
+      case 2: return func.call(thisArg, args[0], args[1])
+      case 3: return func.call(thisArg, args[0], args[1], args[2])
+    }
+    return func.apply(thisArg, args)
+  }
+</script>
+<script id="baseFilter">
+  function baseFilter(collection, predicate) {
+    var result = []
+    baseEach(collection, function (value, index, collection) {
+      if (predicate(value, index, collection)) {
+        result.push(value)
+      }
+    })
+    return result
+  }
+</script>
+<script id="baseFill">
+  function baseFill(array, value, start, end) {
+
+  }
+</script>
+<script id="toArray">
+function toArray(value) {
+    // 1. 卫语句：如果是 null 或 undefined，返回空数组
+  if (!value) { // 这个里面有隐式转换，0 == false（true）隐式转换 0 === false（false）
+    return [];
+  }
+  // 2. 处理“类数组”（包括字符串）
+  if (isArrayLike(value)) {
+    // 字符串比较特殊，因为直接 copyArray 会丢失特殊的 Unicode 字符（如表情符号）
+    // 所以 Lodash 准备了 stringToArray 来处理复杂的字符拆分
+    return isString(value) ? stringToArray(value) : copyArray(value);
+  }
+  // 3. 处理“可迭代对象”（Iterator）
+  // 这是 ES6 的新特性。如果你传一个自定义的生成器对象，
+  // 只要它有 [Symbol.iterator]，Lodash 就能通过迭代器把它转成数组
+  if (symIterator && value[symIterator]) {
+    return iteratorToArray(value[symIterator]());
+  }
+  // 4. 处理 Map 和 Set 以及普通对象
+  // 不同的数据结构有不同的转换方式：
+  // Map 转成 [[key1, value1], [key2, value2]]
+  // Set 转成 [value1, value2]
+  // 普通对象转成值的集合 [value1, value2, ...]
+  var tag = getTag(value),
+    func = tag == mapTag ? mapToArray : (tag == setTag ? setToArray : values);
+  return func(value);
+  }
+
+  function copyArray(source) {
+    let index = -1 
+    const length = source.length
+    const result = new Array(length)
+    // 为什么要自己写while而不用slice.call？在V8引擎中这种比Array.prototype...那种快
+    while(++index < length) {
+      result[index] = source[index]
+    }
+    return result
+  }
+</script>
+<script id="unicodeToArray">
+  function unicodeToArray(string) {
+    return string.match(reUnicode) || []
+  }
+  var reUnicode = RegExp(rsFitz + '(?=' + rsFitz + ')|' + rsSymbol + rsSeq, 'g')
+</script>
+<script id="slice">
+  // slice的源码逻辑
+  function slice(start, end) {
+    var result = []
+    var len = this.length
+    for(var i = 0; i < len; i++) {
+      result.push(this[i])
+    }
+    return result
+  }
+</script>
+<script id="apply, call, bind">
+  Function.prototype.myCall = function(context, ...args) {
+    context = context || window
+    const fnSymbol = Symbol()
+    context[fnSymbol] = this
+    const result = context[fnSymbol](...args)
+    delete context[fnSymbol]
+    return result
+  }
+  Function.prototype.myapply = function(context, args) {
+
+  }
+</script>
+<script id="getTag">
+  var toString = Object.prototype.toString
+  function getTag(value) {
+    if(value == null) {
+      return value === undefined ? '[object Undefined]' : '[object Null]'
+    }
+    return toString.call(value)
+  }
+//  数组 []	"[object Array]"
+//  对象 {}	"[object Object]"
+//  日期 new Date()	"[object Date]"
+//  正则 /abc/	"[object RegExp]"
+//  Map	"[object Map]"
+//  Set	"[object Set]"
+</script>

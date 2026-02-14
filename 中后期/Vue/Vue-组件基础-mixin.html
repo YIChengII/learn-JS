@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <span>{{ list[2] }}</span>
+    <foo-var></foo-var>
+    <baz-baa></baz-baa>
+  </div>
+</body>
+<script>
+  var currentTimeMixin = {
+    data() {
+      return {
+        currentTime: new Data()
+      }
+    },
+    mounted() {
+      this.interval = setInterval(() => {
+        this.currentTime = new Data()
+      }, 1000)
+    },
+    beforeDestroy() {
+      clearInterval(this.interval)
+    }
+  }
+  
+  
+  Vue.component('foo-var', {
+    mixins: [currentTimeMixin],
+    template: `
+      <div> {{ currentTime }} </div>
+    `,
+  })
+
+  Vue.component('baz-baa', {
+    mixins: [currentTimeMixin],
+    template: `
+      <div> {{ currentTime }} </div>
+    `,
+  })
+
+
+  var app = new Vue({
+    el: 'app',
+    data() {
+      return {
+        list: [1, 2, 3, 4, 5],
+        x: 5,
+        y: 8,
+      }
+    }
+  })
+</script>
+
+</html>

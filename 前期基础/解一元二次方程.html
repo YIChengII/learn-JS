@@ -1,0 +1,60 @@
+<script>
+var a = +prompt()
+var b = +prompt()
+var c = +prompt()
+
+var delta = b * b - 4 * a * c
+
+var x1 = (-b + (delta ** 0.5)) / (2 * a)
+var x2 = (-b - (delta ** 0.5)) / (2 * a)
+
+alert('x1 =' + x1)
+alert('x2 =' + x2)
+
+</script>
+
+<script>
+  var a = +prompt()
+  var b = +prompt()
+  var c = +prompt()
+
+  var delta = b * b - 4 * a * c
+  if (delta > 0) {
+    var x1 = (-b + (delta ** 0.5)) / (2 * a)
+    var x2 = (-b + (delta ** 0.5)) / (2 * a)
+    console.log('x1 =' + x1)
+    console.log('x2 =' + x2)
+  } else if (delta == 0) {
+    var x = (-b) / (2 * a)
+    console.log('x1 = x2 = ' + x)
+  } else {
+    console.log('无解')
+  }
+</script>
+
+<script> // 1.4 第二十题
+  var a = +prompt()
+  var b = +prompt()
+  var c = +prompt()
+
+  var delta = b * b - 4 * a * c
+  if (delta > 0) {
+    var x1 = (-b + (delta ** 0.5)) / (2 * a)
+    var x2 = (-b + (delta ** 0.5)) / (2 * a)
+    console.log('x1 =' + x1)
+    console.log('x2 =' + x2)
+  } else if (delta == 0) {
+    var x = (-b) / (2 * a)
+    console.log('x1 = x2 = ' + x)
+  } else {
+    var x1real = -b / (2 * a)
+    var x1imag = Math.sqrt(-delta) / (2 * a)
+    var x2real = -b / (2 * a)
+    var x2imag = -Math.sqrt(-dalta) / (2 * a)
+
+    var x1 = x1real.toFixed(5) + (x1imag < 0 ? '' : '+') +x1imag.toFixed(5) + 'i'
+    var x2 = x2real.toFixed(5) + (x2imag < 0 ? '' : '+') +x2imag.toFixed(5) + 'i'
+
+    console.log('x1=' + x1 + ';x2=' + x2)
+  }
+</script>

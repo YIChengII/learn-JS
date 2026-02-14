@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="./vue-3.global.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <h1>todos</h1>
+    <div>
+      <input type="checkbox" :checked="isAllCompleted" @click="toggleAll">
+      <input type="text" @keyup.enter="addTodo" v-model.trim="todoInput">
+    </div>
+    <ul>
+      <li v-for="(todo, i) of visibleTodos" :key="todo.id">
+        <input type="checkbox" v-model="todo.completed">
+        <input v-focus v-if="editingIdx == i" type="text" :value="todo.text"
+          @keyup.enter="todo.text = $event.target.value.trim(); editingIdx = -1" @blur="editingIdx = -1">
+        <span v-else @dblclick="editingIdx = i">{{ todo.text }}</span>
+        <button @click="deleteTodo(i)">x</button>
+      </li>
+    </ul>
+    <div>
+      <span>{{ leftCount }} items left</span>
+      <div>
+        <label><input type="radio" v-model="visibleType" value="all">all</label>
+        <label><input type="radio" v-model="visibleType" value="active">active</label>
+        <label><input type="radio" v-model="visibleType" value="completed">completed</label>
+      </div>
+      <button @click="clearCompleted" v-show="hasCompleted">clear completed</button>
+    </div>
+  </div>
+</body>
+<script>
+  var { createApp, ref, reactive, computed } = Vue
+  var app = createApp({
+    setup() {
+      var todos = reactive([{
+        text: 'eat',
+        completed: true,
+      }, {
+        text: 'sleep',
+        completed: false,
+      }])
+      var editingIdx = ref(-1)
+      var visibleType = ref('all')
+      var isAllCompleted = computed(() => todos.every(it => it.completed))
+      var leftCount = computed(() => todos.filter(it => it.completed == false).length)
+      var hasCompleted = computed(() => todos.some(it => it.completed))
+      var todoInput = ref('')
+      var visibleTodos = computed(() => {
+        return todos.filter(it => {
+          if (visibleType.value == 'all') {
+            return true
+          } else if (visibleType == 'active') {
+            return it.completed == false
+          } else {
+            return it.completed == true
+          }
+        })
+      })
+      function addTodo() {
+        if (todoInput.value) {
+          todos.push({
+            id: Math.random().toString(16).slice(2),
+            text: todoInput.value,
+            completed: false,
+          })
+          todoInput.value = ''
+        }
+      }
+      function toggleAll() {
+        if (isAllCompleted.value) {
+          todos.forEach(it => {
+            it.completed = false
+          })
+        } else {
+          todos.forEach(it => {
+            it.completed = true
+          })
+        }
+      }
+      function clearCompleted() {
+        for (var i = 0; i < todos.length; i++) {
+          if (todos[i].completed == true) {
+            todos.splice(i, 1)
+            i--
+          }
+        }
+      }
+      function deleteTodo(id) {
+        var i = todos.findIndex(it => it.id == id)
+        if (i >= 0) {
+          todos.splice(i, 1)
+        }
+        todo.splice(i, 1)
+      }
+      return {
+        todos,
+        editingIdx,
+        visibleType,
+        isAllCompleted,
+        hasCompleted,
+        visibleTodos,
+        leftCount,
+        clearCompleted,
+        todoInput,
+        addtodo,
+        toggleAll,
+      }
+    },
+  })
+  app.directives('focus', {
+    mounted(el) {
+      el.focus()
+    }
+  })
+  app.mount('#app')
+</script>
+
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>mini-Vue2</title>
+</head>
+<body>
+  <div id="app">
+    <h1>{{ title }}</h1>
+    <input v-model="message" />
+    <p>你输入的是：{{ message }}</p>
+    <button onclick="vm.message = 'Changed!'">改变 message</button>
+  </div>
+
+  <script src="./mini-vue.js"></script>
+  <script>
+    const vm = new MiniVue({
+      el: '#app',
+      data: {
+        title: 'Hello mini-Vue2!',
+        message: 'Type something...'
+      }
+    });
+  </script>
+
+  
+  <script>
+    // Dep: 依赖管理器（每个属性一个 Dep，管理多个 Watcher）
+class Dep {
+  constructor() {
+    this.subs = []; // 订阅者列表（Watcher 们）
+  }
+  depend() {
+    if (Dep.target) {
+      this.subs.push(Dep.target); // 收集当前 Watcher
+    }
+  }
+  notify() {
+    this.subs.forEach(watcher => watcher.update()); // 通知所有 Watcher 更新
+  }
+}
+Dep.target = null; // 全局变量，当前正在收集的 Watcher
+
+// Observer: 让数据变成响应式
+function observe(data) {
+  if (typeof data !== 'object' || data === null) return;
+
+  Object.keys(data).forEach(key => {
+    defineReactive(data, key, data[key]);
+  });
+}
+
+function defineReactive(obj, key, val) {
+  observe(val); // 递归处理深层对象
+
+  const dep = new Dep(); // 每个属性一个 Dep
+
+  Object.defineProperty(obj, key, {
+    enumerable: true,
+    configurable: true,
+    get() {
+      if (Dep.target) {
+        dep.depend(); // 依赖收集
+      }
+      return val;
+    },
+    set(newVal) {
+      if (newVal === val) return;
+      val = newVal;
+      observe(newVal); // 新值如果是对象，也响应式
+      dep.notify(); // 派发更新
+    }
+  });
+}
+
+// Watcher: 每个需要更新的地方一个 Watcher（比如一个 {{ }} 或一个 v-model）
+class Watcher {
+  constructor(vm, expOrFn, cb) {
+    this.vm = vm;
+    this.cb = cb;
+    this.getter = parsePath(expOrFn); // 解析 'a.b.c' 路径
+    this.value = this.get(); // 第一次 get，触发依赖收集
+  }
+  get() {
+    Dep.target = this; // 设置当前 Watcher
+    const value = this.getter(this.vm); // 读取数据，触发 get
+    Dep.target = null; // 收集完清空
+    return value;
+  }
+  update() {
+    const oldValue = this.value;
+    this.value = this.get(); // 重新 get 新值
+    this.cb.call(this.vm, this.value, oldValue); // 执行更新回调
+  }
+}
+
+// 路径解析：'a.b.c' → function(obj) { return obj.a.b.c }
+function parsePath(path) {
+  const segments = path.split('.');
+  return function(obj) {
+    for (let seg of segments) {
+      if (!obj) return;
+      obj = obj[seg];
+    }
+    return obj;
+  };
+}
+
+// Compiler: 模板解析器（处理 DOM）
+class Compiler {
+  constructor(vm, el) {
+    this.vm = vm;
+    this.el = document.querySelector(el);
+    this.fragment = this.nodeToFragment(this.el); // 创建文档片段
+    this.compile(this.fragment); // 解析模板
+    this.el.appendChild(this.fragment); // 放回 DOM
+  }
+
+  nodeToFragment(el) {
+    const fragment = document.createDocumentFragment();
+    while (el.firstChild) {
+      fragment.appendChild(el.firstChild);
+    }
+    return fragment;
+  }
+
+  compile(el) {
+    el.childNodes.forEach(node => {
+      if (node.nodeType === 1) { // 元素节点
+        this.compileElement(node);
+      } else if (node.nodeType === 3 && /\{\{(.*)\}\}/.test(node.textContent)) { // 文本节点 {{ }}
+        this.compileText(node);
+      }
+      if (node.childNodes && node.childNodes.length) {
+        this.compile(node); // 递归子节点
+      }
+    });
+  }
+
+  compileElement(node) {
+    const attrs = Array.from(node.attributes);
+    attrs.forEach(attr => {
+      const name = attr.name;
+      const exp = attr.value;
+      if (name === 'v-model') {
+        this.bindModel(node, exp);
+      }
+    });
+  }
+
+  compileText(node) {
+    const exp = RegExp.$1.trim(); // {{ xxx }} → xxx
+    this.updateText(node, this.vm[exp] || parsePath(exp)(this.vm)); // 初始更新
+    new Watcher(this.vm, exp, value => this.updateText(node, value)); // 创建 Watcher
+  }
+
+  bindModel(node, exp) {
+    this.updateModel(node, this.vm[exp] || parsePath(exp)(this.vm)); // 初始 value
+    new Watcher(this.vm, exp, value => this.updateModel(node, value)); // 数据 → 视图
+
+    node.addEventListener('input', e => {
+      const newValue = e.target.value;
+      this.setValue(this.vm, exp, newValue); // 视图 → 数据
+    });
+  }
+
+  updateText(node, value) {
+    node.textContent = node.textContent.replace(/\{\{.*\}\}/, value ?? '');
+  }
+
+  updateModel(node, value) {
+    node.value = value ?? '';
+  }
+
+  setValue(obj, path, value) {
+    const segments = path.split('.');
+    for (let i = 0; i < segments.length - 1; i++) {
+      obj = obj[segments[i]];
+    }
+    obj[segments[segments.length - 1]] = value;
+    // set 后会自动触发 notify，因为响应式
+  }
+}
+
+// MiniVue 主类
+class MiniVue {
+  constructor(options) {
+    this.data = options.data;
+    observe(this.data); // 响应式
+    Object.keys(this.data).forEach(key => {
+      Object.defineProperty(this, key, {
+        get: () => this.data[key],
+        set: val => this.data[key] = val
+      });
+    }); // 代理到 vm 上（this.message → this.data.message）
+    new Compiler(this, options.el); // 编译模板
+  }
+}
+  </script>
+</body>
+</html>

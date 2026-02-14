@@ -1,0 +1,54 @@
+<script>
+  // 函数调用接一个结点，接一个关键字
+  function highlightCode(node, keywords) {
+    // 这一个结点属性就可以读到这个结点里面的文字内容
+    var text = node.textContent;  // 用来设置一个节点及其后代节点的纯文本内容，
+    // 读取时返回该节点以及所有子节点的纯文本内容，设置时会将该节点下所有子节点替换，并纯文本插入
+
+    // 接着给结点赋值将里面的文字清空了
+    node.textContent = ""; // Clear the node
+    var match, pos = 0;
+    //keywords就是匹配每个语言里面的关键字的正则表达式
+    // 起始长度，位置，内容
+    while (match = keywords.exec(text)) {
+      // 将前面这一段取出来
+      var before = text.slice(pos, match.index);
+      // 创建文本结点，然后添加回到原来的结点里面去
+      node.appendChild(document.createTextNode(before));
+      // appendChild: 用来把一个节点插入到某个父节点的最后一个子节点的位置
+      // document.createTextNode: 创建纯文本节点
+      // textContent: 更简单快捷，适合直接覆盖内容
+      
+      // 创建标签
+      var strong = document.createElement(" strong ");
+      // 然后给strong里面创建一个文本结点，文本结点就是我们匹配到的内容
+      strong.appendChild(document.createTextNode(match[0]));
+      // 加粗的也加进去
+      node.appendChild(strong);
+      // 更新pos
+      pos = keywords.lastIndex;
+    }
+    // 最后处理一次
+    var after = text.slice(pos);
+    node.appendChild(document.createTextNode(after));
+  }
+
+  // 能匹配到的语言写一个
+  var languages = {
+    javascript: /\b(function|return|var)\b/g/* ... etc */
+  };
+
+  function highlightAllCode() {
+    // 遍历页面中的所有的pre标签
+    var pres = document.body.getElementsByTagName("pre");
+    for (var i = 0; i < pres.length; i++) {
+      // 对于每个pre标签来说，它拿到其语言
+      var pre = pres[i];
+      var lang = pre.getAttribute("data - language");
+      // 如果匹配后我才调用这个函数，来高亮它
+      if (languages.hasOwnProperty(lang))
+        highlightCode(pre, languages[lang]);
+    }
+  }
+
+</script>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <json-viewer :data="obj5"></json-viewer>
+  </div>
+</body>
+<script>
+  Vue.component('json-viewer', {
+    props: ['data'],
+    template: `
+      <span v-if="typeof data == 'number'">{{ data }}</span>
+      <span v-else-if="typeof data == 'string'">"{{ data }}"</span>
+      <span v-else-if="typeof data == 'boolean'">{{ data }}</span>
+      <span v-else-if="data == null">null</span>
+      <span v-else-if="Array.isArray(data)">
+        <span @click="open = !open">{{open ? '-' : '+'}}</span>[
+          <span v-show="open">
+            <div v-for="(item, idx) of data">
+              <json-viewer :data="item"></json-viewer>{{idx < size - 1 ? ',' : ''}}
+            </div>
+          </span>
+        <span v-show="!open">...</span>
+      ]</span>,
+      <span v-else="typeof data == object">
+        <span @click="open = !open">{{open ? '-' : '+'}}</span>{
+          <span v-show="open">
+            <div v-for="(item, key, idx) of data">
+              {{ key }} :<json-viewer :data="item"></json-viewer>{{idx < size - 1 ? ',' : ''}}
+            </div>
+          </span>
+        <span v-show="!open">...</sapn>
+        }
+      </span>
+    `,
+    data() {
+      return {
+        open: true,
+        size: Object.keys(data ?? {}).length,
+      }
+    }
+  })
+
+  var app = new Vue({
+    el: "#app",
+    data() {
+      return {
+        x: 5,
+        y: 8,
+        data: {
+          a: 1, b: 2,
+          c: {
+            x: 3, y: 4,
+            d: [1, 2, { foo: 8, bar: 9 }]
+          }
+        }
+      }
+    },
+    mounted() {
+      this.$refs.input1.select()
+      console.log(this.$refs)
+    },
+  })
+  // 组件里面的话，Vue的for循环的优先级比if的高
+</script>
+
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script src="https://unpkg.com/vue@2/dist/vue.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body>
+  <div id="app">
+    <Common-Layout>
+      <template #header>
+        <header>adasdasd</header>
+      </template>
+      <template #sidebar>
+        asdwdwfg
+        <br>
+        sadasd
+        <br>
+        asdasds
+      </template>
+      <template #main>asodosjddsad</template>
+    </Common-Layout>
+    <FancyButton>
+      Click ME!
+    </FancyButton>
+    <!-- <slider :imgs="cats">
+      <img v-for="cat of cats" src="cat.link" alt="">
+    </slider> -->
+  </div>
+</body>
+<script>
+  Vue.component('slider', {
+    // 外部输入的指令
+    props: {
+      // 声明数据的规格
+      imgs: Array,
+    },
+    // 外壳与长相，决定了用户最终在网页上面看到什么
+    template: `
+    <div class="w-[300px] h-[200px] relative border border-black"> 
+      <img :src="imgs[currentIdx]" class="w-full h-full"/>
+      <button @click="prev" class="absolute h-4 top-1/2">prev</button>
+      <button @click="next" class="absolute h-4 top-1/2 right-0">next</button>
+      <ul class="flex absolute bottom-0 w-full justify-center">
+        <li v-for="(url, idx) of imgs" :key="url" @click="currentIdx = idx" class="cursor-pointer w-2 h-2 m-1 rounded-full" :class="{'bg-red-500': currentIdx == idx, 'bg-slate-500': currentIdx != idx}"></li>
+      </ul>
+    </div>
+    `,
+    // 内部私有的口袋，存储组件自己管理的数据
+    data() {
+      return {
+        currentIdx: 0,
+      }
+    },
+    // 执行动作的技能
+    methods: {
+      prev() {
+        this.currentIdx--
+        if (this.currentIdx == -1) {
+          this.currentIdx = this.imgs.length - 1
+        }
+      },
+      next() {
+        this.currentIdx++
+        if (this.currentIdx == this.imgs.length) {
+          this.currentIdx = 0
+        }
+      },
+    }
+  })
+  Vue.component('FancyButton', {
+    template: `
+      <button>
+        <slot />
+      </button>
+    `
+  })
+
+  Vue.component('CommonLayout', {
+    template:`
+    <div>
+      <header></header>
+      <div>
+        <slot name="header"/>
+      </div>
+      <div>
+        <div><slot name="sidebar"/></div>
+        <div><slot name="main"/></div>
+      </div>
+    </div>
+    `
+  })
+  var app = new Vue({
+    el: '#app',
+    data() {
+      return {
+        x: 5,
+        y: 8,
+      }
+    },
+  })
+</script>
+
+
+  <!-- 屎山代码的典范 -->
+   <!-- 普通的一个组件，自己决定了怎么显示每一行， {{ todo.text }}，
+   父组件除了传数据，没有办法控制每一行长什么样 -->
+<ul>
+  <li
+    v-for="todo in filteredTodos"
+    v-bind:key="todo.id"
+  >
+    {{ todo.text }}
+  </li>
+</ul>
+<!-- 我们可以将每个 todo 作为父级组件的插槽，以此通过父级组件对其进行控制，
+ 然后将 todo 作为一个插槽 prop 进行绑定： -->
+
+
+<!-- 这个模块的部分讲就是子组件 -->
+<ul>
+  <li
+    v-for="1todo in filteredTodos"
+    v-bind:key="2todo.id"
+  >
+    <!--
+    我们为每个 todo 准备了一个插槽，
+    将 `todo` 对象作为一个插槽的 prop 传入。
+    -->
+    <!-- 数据回传。v-bind:todo="todo"这个是回传动作 -->
+    <slot name="3todo" v-bind:4todo="5todo">
+      <!-- name插槽名字，父组件通过v-slot：todo，找到这个门牌号 -->
+      <!-- 后备内容 -->
+      {{ todo.text }}
+    </slot>
+  </li>
+</ul>
+<!-- 现在当我们使用 <todo-list> 组件的时候，我们可以选择为 todo 定义一个不一样的 <template> 作为替代方案，
+  并且可以从子组件获取数据： -->
+
+
+  <!-- 使用标签的样子 -->
+  <todo-list v-bind:6todos="7todos">
+  <!-- 把子组件传出来的todo接住 -->
+  <template v-slot:8todo="{ 9todo }"> 
+    <!-- span和v-if来装修它 -->
+    <span v-if="10todo.isComplete">✓</span>
+    {{ todo.text }}
+  </template>
+</todo-list>
+</html>

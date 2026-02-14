@@ -1,0 +1,83 @@
+<script>
+
+  function readFile(filePath) {
+    var xhr = new XMLHttpRequest()
+    xhr.open('get', filePath, false)
+    xhr.send()
+    return xhr.responseText
+  }
+
+  // ✔ 1. module.exports 才是真正导出的值
+  // ✔ 2. exports 是对 module.exports 的引用（别名）
+  // ✔ 3. 给 exports.xxx 添加属性可以导出多个成员
+  // ✔ 4. 重新赋值 exports = ...完全无效（不要这么做）
+
+  function require(name) {
+    var code = readFile(name)
+    var moduleFunc = new Function("exports", code);
+    var exports = {};
+    moduleFunc(exports);
+    return exports;
+  }
+
+  function require(filePath) {
+    var code = readFile(filePath)
+    var moduleFunc = new Function('module, exports', code)
+    var module = { exports: {} }
+    moduleFunc(module, module.exports)
+    return module.exports
+  }
+
+  var caChe = Object.create(null)
+  function require(filePath) {
+    if (filePath in caChe) {
+      return caChe[filePath]
+    }
+    var code = readFile(filePath)
+    var moduleFunc = new Function('module exports', code)
+    var module = { exports: {} }
+    moduleFunc(module, module.exports)
+    return caChe[filePath] = module.exports
+  }
+
+  // 函数	      环境	      类型	                      触发时机
+  // setTimeout	Both	      Macro-task	               延迟后执行
+  // setInterval	Both	    Macro-task	               每隔一段时间执行
+  // setImmediate	Node	    Macro-task	               当前事件循环尾部
+  // queueMicrotask	Both	  Micro-task	               微任务队列
+  // process.nextTick	Node	特殊微任务	                优先级最高
+  // requestAnimationFrame	Browser	Render callback	   下一帧渲染前
+  // requestIdleCallback	  Browser	Idle callback	     浏览器空闲时
+
+
+  // 这个代码是为了解决两个模块相互依赖的问题
+  var caChe = Object.create(null)
+  function require(filePath) {
+    if (filePath in caChe) {
+      return caChe[filePath].exports
+    }
+    var code = readFile(filePath)
+    var moduleFunc = new Function('module exports', code)
+    var module = {
+      exports: {}
+    }
+    caChe[filePath] = module
+    moduleFunc(module, module.exports)
+    return module.exports
+  }
+
+// 表达式	                JS解释为	          是否有效	      说明
+// { a: 1 }	             { "a": 1 }	            ✔	          属性名是字符串
+// obj[a]	               obj[变量 a]	          ❌	          a 是变量，但不存在
+// obj["a"]	             obj 的 "a" 属性	       ✔	         正确写法
+// obj[a + 'b']	         obj 的 "ab" 属性	       ✔	         表达式最终变字符串
+
+
+  // exports ——只是一个方便书写的变量
+  // module.exports ——才是真正被 return 的对象
+  require('./a.js')
+
+  // 目前的同步require不能接受，有两个原因：
+  // 一个原因是所有的模块都是串行加载的，需要的时间太久
+  // 二是加载的过程中间（由于是同步加载）页面还是无响应（阻塞）的
+</script>

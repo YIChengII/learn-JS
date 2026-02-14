@@ -1,0 +1,291 @@
+<script>
+  // 映射的经典实现能让每个基本操作都O（1）的时间复杂度
+  // 其关键原理就是：只根据key通过确定的算法计算出一个值，并最后模上存储数据用的数组的长度，就得到一个下标，
+  // 就把这组映射的数据存在这个下标位置上
+  // 映射表在其它的语言里面也称为哈希表
+  // 根据key计算出一个确定的随机数的函数在这里称为哈希函数，所以映射表也称为哈希表（在某些语言里（python)也叫字典）
+  // 哈希冲突
+  // key可能是（foo, bar, baz, abc, xg, bcx,等等)，通过f函数计算出一个位置，f就是哈希函数
+  // 所以key的值它是多变的它很有可能计算出同一个位置
+  // 设计哈希表时必须要考虑处理哈希冲突的方法
+  // 重新哈希法:设计多个哈希函数，第一个不行换第二个，以此类推
+
+  // 简易开放地址法
+  class HashMap {
+    constructor() {
+      this._keys = new Array(16)
+      this._vals = new Array(16)
+      this._size = 0
+    }
+    _hash(key) {
+      var seed = 131313
+      var hash = 0
+      for (var i = 0; i < key.length; i++) {
+        hash = ((hash * seed >>> 0) + key.charCodeAt(i)) >>> 0
+      }
+      return hash % this._keys.length
+    }
+    set(key, val) {
+      var idx = this._hash(key)
+      for (var i = idx, j = 0; j < this._keys.length; i++, j++) {   // 线性探测
+        if (i === this._keys.length) {
+          i = 0
+        }
+        if (this._keys[i] == key) {
+          this._vals[i] = val
+          return this
+        } else if (this._keys[i] == null) {
+          this._keys[i] = key
+          this._vals[i] = val
+          this._size++
+          return this
+        }
+      }
+      return this
+    }
+    get(key) {
+      var idx = this._hash(key)
+      for (var i = idx, j = 0; j < this._keys.length; i++, j++) {
+        if (i === this._keys.length) {
+          i = 0
+        }
+        if (this._keys[i] == key) {
+          return this._vals[i]
+        } else if (this._keys[i] == null) {
+          return undefined
+        }
+      }
+      return undefined
+    }
+  }
+
+  // 链式存储法解决哈希冲突
+  class HashsMap {
+    constructor() {
+      this._capacity = 16
+      // 表示每个位置存的链表都是一个空链表
+      this._list = new Array(this._capacity).fill(null)
+      this._size = 0
+      // 扩张因子
+      this._growFactor = 0.75
+      // 收缩因子
+      this._shrinkFactor = 0.125
+    }
+    // 哈希函数
+    _hash(key) {
+      if (typeof key == 'number') {
+        key = 'N-' + key
+      }
+      if (typeof key == 'string') {
+        key = 'S-' + key
+      }
+      var seed = 13131313
+      var hash = 0
+      for (var i = 0; i < key.length; i++) {
+        hash = ((hash * seed >>> 0) + key.charCodeAt(i)) >>> 0
+      }
+      return hash % this._capacity
+    }
+    // 扩容函数
+    grow() {
+      var oldlist = this._list
+      this._capacity *= 2
+      this._list = new Array(this._capacity)
+      this._size = 0
+      for (var list of oldlist) {
+        var p = list
+        while (p) {
+          this.set(p.key, p.val)
+          p = p.next
+        }
+      }
+    }
+    // 收缩函数
+    shrink() {
+      if (this._capacity <= 32) {
+        return
+      }
+      this._capacity /= 2
+      var oldlist = this._list
+      this._list = new Array(this._capacity)
+      this._size = 0
+      for (var list of oldlist) {
+        var p = list
+        while (p) {
+          this.set(p.key, p.val)
+          p = p.next
+        }
+      }
+    }
+    // 直接计算装载因子
+    _loadFactor() {
+      return this._size / this._capacity
+    }
+    set(key, val) {
+      var idx = this._hash(key)
+      var p = this._list[idx]
+      while (p) {
+        if (p.key == key) {
+          p.val = val
+          return this
+        }
+        p = p.next
+      }
+      var node = {  // 这个是链式哈希"头插法"
+        key: key,
+        val: val,
+        next: this._list[idx] // this._list[idx] 相当于哈希数组的第idx个槽位
+      }
+      this._list[idx] = node // 让新节点成为表头
+      this._size++
+      if (this._loadFactor() > this._growFactor) {
+        this.grow()
+      }
+      return this
+    }
+    // 拿到链表
+    get(key) {
+      var idx = this._hash(key)
+      var p = this._list[idx]
+      while (p) {
+        if (p.key == key) {
+          return p.val
+        }
+        p = p.next
+      }
+      return undefined
+    }
+    // 找到它存在的位置然后把它读出来,判断某个key是否存在
+    has(key) {
+      var idx = this._hash(key)
+      var p = this._list[idx]
+      while (p) {
+        if (p.key == key) {
+          return true
+        }
+        p = p.next
+      }
+      return false
+    }
+    // 删除这个结点
+    delete(key) {
+      var idx = this._hash(key)
+      var p = this._list[idx]
+      if (p == null) {
+        return false
+      }
+      if (p.key == key) {
+        this._list[idx] = p.next
+        this._size--
+        if (this._loadFactor() < this._shrinkFactor) {
+          this.shrink()
+        }
+      }
+      while (p.next) {
+        if (p.next.key == key) {
+          p.next = p.next.next
+          this._size--
+          if (this._loadFactor() < this._shrinkFactor) {
+            this.shrink()
+          }
+        }
+        p = p.next
+      }
+      return false // 表示没有东西可以删除
+    }
+    forEach(action) {
+      for (var list of this._list) {
+        var p = list
+        while (p) {
+          action(p.val, p.key)
+          p = p.next
+        }
+      }
+    }
+    get size() {   // get size() 就是一个“伪属性”，用来安全地读取 _size 的值。
+      // 只是一个取值器
+      return this._size
+    }
+  }
+
+  // 在传统的哈希表下key只能是字符串，不能是别的东西
+
+  // 哈希函数
+  function hash(key) {
+    var seed = 131313
+    var hash = 0
+    for (var i = 0; i < key.length; i++) {
+      // 模拟c++或java里面的无符号运算
+      hash = ((hash * seed >>> 0) + key.charCodeAt(i)) >>> 0
+    }
+    return hash
+  }
+
+  // 为什么我们实现的HashMap甚至比js自带的Map还要快一点？
+  // 1 Map中会记录所有映射对的插入顺序，遍历（forEach）时会按照插入顺序进行遍历，而维护这个顺序需要额外的
+  // 操作，会花时间。而我们的实现中，完全没考虑key的插入顺序问题，也无法知道内部结构中数据的原始插入顺序
+
+
+  // 2 我们实现的HashMap中的key只支持字符串，而它的实现中，key和val都可以是任何js数据类型，区分数据类型
+  // 应该也是要花时间的
+  // 我们实现哈希表的过程中用到了链表，而链表是对象，对象就是映射，是否说明我们的哈希表是基于一个已经存在的哈希
+  // 表实现的呢？ 不是。因为我们使用对象的时候没有把它当成映射来使用（即没有往对象中增减属性，对象创建出来的
+  // 时候属性集合就已经确定了）。其它语言（c, java)里的对象是不能做为映射使用的，它们有类型，特定类型的对象
+  // 只有特定的属性合集，对象并不能随意增减属性。
+  // 红黑树，保持树结构平衡
+
+
+
+  // var set = new Set()
+  /* Set是一种数据结构，类似于数组
+  主要特点：Set中的每个值只能出现一次，重复的值会被自动忽略
+  可接受iterable参数：创建Set时，可以传入一个可以迭代的对象（如数组）作为初始值，（例如（new Set([1,2,3])）
+  元素的类型不限：Set可以包含任何类型的值，包括对象和函数
+
+  Set对象的常用方法： 使用add(value) 方法向Set中添加一个新元素
+  删除元素：使用delete(value) 方法删除Set中的指定元素
+  判断元素是否存在：使用has(value) 方法检查Set中是否包含某个元素
+  获取元素数量：使用size属性获取Set中元素的个数
+  Set.has() 用于检查某个值是否存在于集合中
+  const mySet = new Set()
+  mySet.add({name: 'Alice'})
+  console.log(mySet.has({name:'Alice'})) // -> false
+  注意：对象是通过引用比较的，所以即使内容相同但不是同一个对象也会返回false
+  const alice = {name: 'Alice'}
+  mySet.add(alice)
+  console.log(mySet.has(alice)) // -> true
+
+
+  new Map() 是 JavaScript 中用于创建一个新的 Map 对象的构造函数。Map 对象是一种存储键值对的数据结构，
+  与普通对象（Object）相比，它具有以下特点：
+  键的类型：Map 的键可以是任意类型，包括对象、函数、基本类型等，而普通对象的键只能是字符串或 Symbol。
+  内置 Symbol	作用
+  Symbol.iterator	定义对象的迭代器（for...of 能遍历）
+  Symbol.toStringTag	控制 Object.prototype.toString.call(obj) 的输出
+  Symbol.hasInstance	控制 instanceof 的行为
+  Symbol.toPrimitive	控制对象转原始值的逻辑
+  
+  键的顺序：Map 会按照插入顺序保存键值对，而普通对象的键顺序不一定与插入顺序一致。
+  大小获取：Map 可以通过 size 属性直接获取键值对的数量，而普通对象需要手动计算。
+  性能：在频繁增删键值对的场景下，Map 的性能优于普通对象。
+  基本用法
+  创建空 Map：const map = new Map();。
+  初始化 Map：可以传入一个包含键值对的可迭代对象（如数组）来初始化
+  Map：const map = new Map([['key1', 'value1'], ['key2', 'value2']]);。
+  常用方法
+  添加键值对：map.set(key, value)。
+  获取值：map.get(key)。
+  检查键是否存在：map.has(key)。
+  删除键值对：map.delete(key)。
+  清空 Map：map.clear()。
+  遍历：可以使用 keys()、values()、entries() 方法或 forEach 遍历键值对。
+
+
+  const count = new Map()
+  for (const ch of str) {
+  count.set(ch, (count.get(ch) || 0) + 1)
+}
+
+  !!!!!!!!!!!!!!注意key值只能传字符串
+  */
+</script>

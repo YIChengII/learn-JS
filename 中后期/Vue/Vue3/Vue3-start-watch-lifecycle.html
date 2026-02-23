@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="app">
+    <button-counter :start="0" :step="2"></button-counter>
+  </div>
+  <script src="./vue-3.global.js"></script>
+  <script>
+    var {  createApp, ref, reactive, computed, watch } = Vue
+
+    var app = createApp({
+      setup() {
+        var x = ref(2)
+        var y = ref(3)
+
+        function inc() {
+          x.value++
+        }
+        return {
+          x: x,
+          y: y,
+          inc,
+        }
+      }
+    })
+    app.component('button-counter', {
+      props: ['start', 'step'],
+      template: `
+        <div>
+          <button @click="count--">-</button>
+          <span>{{ count }}</span>
+          <button @click="count++">+</button>
+        </div>
+      `,
+      setup(props) {
+        var value = ref(props.start)
+        console.log(props)
+        var count = ref(props.start)
+        watch(() => props.start, () => {
+          count.value = props.start
+        })
+        function dec() {
+          count.value--
+        }
+        function inc() {
+          count.value++
+        }
+        return {
+          count,
+        }
+      }
+
+      
+    })
+    
+    var vm = app.mount('#app')
+    // js规范规定set必须表示布尔值表示是否成功
+  </script>
+</body>
+</html>

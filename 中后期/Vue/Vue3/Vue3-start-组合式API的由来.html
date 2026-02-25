@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+
+<body>
+  <div id="app">
+    <foo-bar></foo-bar>
+    <button-counter :start="0" :step="2"></button-counter>
+  </div>
+  <script src="./vue-3.global.js"></script>
+  <script>
+    var { createApp, ref, reactive, computed, watch, unBeforeUpdate, onMounted, onBeforeUnmount } = Vue
+
+    var app = createApp({
+      setup() {
+        var x = ref(2)
+        var y = ref(3)
+
+        function inc() {
+          x.value++
+        }
+        return {
+          x: x,
+          y: y,
+          inc,
+        }
+      },
+      data() {
+        return {
+          a: 1,
+          b: 2,
+        }
+      },
+      mounted() {
+        console.log(this)
+      }
+    })
+    function useMousePosition() {
+      var mouse = reactive({
+        x: 0,
+        y: 0,
+      })
+      function onMouseMove(e) {
+        mouse.x = e.clientX
+        mouse.y = e.clientY
+      }
+      onMounted(() => {
+        window.addEventListener('mousemove', onMouseMove)
+      })
+      onBeforeUnmount(() => {
+        window.addEventListener('mousemove', onMouseMove)
+      })
+      return mouse
+    }
+    function useCurrentTime() {
+      var currentTime = ref(new Date())
+      var id
+      onMounted(() => {
+        id = setInterval(() => {
+          currentTime.value = new Date()
+        }, 1000)
+      })
+      onBeforeUnmount(() => {
+        clearInterval(id)
+      })
+      return currentTime
+    }
+
+    function useTimeAndMouse() {
+      var time = useCurrentTime()
+      var mouse = useMousePosition()
+      return {
+        time, mouse
+      }
+    }
+
+    app.component('button-counter', {
+      template: `
+        <div>
+          <div>{{ currentTime }}</div>
+          <div>({{ mouse.x }},{{ mouse.y }})</div>
+        </div>
+      `,
+      setup(props) {
+        var { mouse, time } = useTimeAndMouse()
+
+        return {
+          currentTime: time,
+          mouse,
+        }
+      },
+    })
+
+    app.component('foo-bar', {
+      template: `
+        <div>{{ currentTime }}</div>
+        <div>{{ mouse.x * mouse.y }}</div>
+      `,
+      setup: function steup() {
+        var currentTime = useCurrentTime()
+        var mouse = useMousePosition()
+
+        return {
+          currentTime,
+          mouse,
+        }
+      }
+    })
+    var vm = app.mount('#app')
+    // js规范规定set必须表示布尔值表示是否成功
+  </script>
+</body>
+
+</html>

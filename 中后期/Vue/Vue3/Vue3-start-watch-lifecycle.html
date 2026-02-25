@@ -1,17 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
 </head>
+
 <body>
   <div id="app">
+    <foo-bar></foo-bar>
+    <button-counter ref="bcl" :start="0" :step="2"></button-counter>
+    <button-counter :start="0" :step="2"></button-counter>
     <button-counter :start="0" :step="2"></button-counter>
   </div>
   <script src="./vue-3.global.js"></script>
   <script>
-    var {  createApp, ref, reactive, computed, watch } = Vue
+    var { createApp, ref, reactive, computed, watch, onBeforeUpdate } = Vue
 
     var app = createApp({
       setup() {
@@ -21,13 +26,24 @@
         function inc() {
           x.value++
         }
+
         return {
           x: x,
           y: y,
           inc,
         }
+      },
+      data() {
+        return {
+          a: 1,
+          b: 2,
+        }
+      },
+      mounted() {
+        console.log(this)
       }
     })
+
     app.component('button-counter', {
       props: ['start', 'step'],
       template: `
@@ -37,29 +53,105 @@
           <button @click="count++">+</button>
         </div>
       `,
-      setup(props) {
-        var value = ref(props.start)
-        console.log(props)
+      setup(props, context) {
+
+        console.log(props, context)
         var count = ref(props.start)
+
         watch(() => props.start, () => {
           count.value = props.start
         })
+
+        onBeforeUpdate(() => {
+          console.log('update', count.value)
+        })
+
         function dec() {
           count.value--
         }
         function inc() {
           count.value++
         }
-        return {
-          count,
-        }
-      }
 
-      
+        return {
+          count, dec, inc
+        }
+      },
+      watch: {
+        step: function () {
+
+        }
+      },
     })
-    
+
+    app.component('foo-bar', {
+      template: `
+        <div @click="x++">{{ x }}</div>
+      `,
+      setup: function steup() {
+        var x = ref(0)
+
+        onBeforeUpdate(() => {
+          console.log('foo-bar updated')
+        })
+
+        return { x }
+      }
+    })
+
+
     var vm = app.mount('#app')
     // js规范规定set必须表示布尔值表示是否成功
+
+
+
+
+    // 本身是一个单一的全局存在的函数
+    // unBeforeUpdate函数但是它似乎是能够感知到自己在哪个组件的实例中被调用的，
+    // 因为它会把自己接受到的参数绑定到相应组件实例的相应周期上
   </script>
 </body>
+<script>
+  // 这个是一个极简的Vue感应机制
+  let currentInstance = null; // 全局“记录仪”
+
+  // 模拟 Vue 内部的生命周期注册函数
+  function onBeforeUpdate(fn) {
+    if (currentInstance) {
+      // 关键：把函数钩在当前正在运行的那个实例上
+      currentInstance.hooks.push(fn);
+    } else {
+      console.error("钩子必须在 setup 中同步调用！");
+    }
+  }
+
+  // 模拟组件构造器
+  function createComponent(setupFn) {
+    const instance = {
+      hooks: [],
+      mount() {
+        // 1. 设置当前环境
+        currentInstance = instance;
+        // 2. 执行 setup (用户代码)
+        setupFn();
+        // 3. 清除环境（过河拆桥）
+        currentInstance = null;
+      }
+    };
+    return instance;
+  }
+
+  // --- 用户代码 ---
+  const myComp = createComponent(() => {
+    onBeforeUpdate(() => console.log("组件更新啦！")); // 成功感知！
+
+    setTimeout(() => {
+      // onBeforeUpdate(() => {}); // 如果在这调，就会报错，因为 currentInstance 已是 null
+    }, 100);
+  });
+
+  myComp.mount();
+  console.log(myComp.hooks); // 你会发现函数成功挂载到了 myComp 上
+</script>
+
 </html>

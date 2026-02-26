@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    li {
+      span {
+        display: inline;
+      }
+
+      input[type="text"] {
+        display: none;
+      }
+
+      &.editing {
+        span {
+          display: none;
+        }
+
+        input[type="text"] {
+          display: inline;
+        }
+      }
+    }
+
+    ul {
+      &.show-active {
+        li.completed {
+          display: none;
+        }
+      }
+
+      &.show-completed {
+        li.active {
+          display: none;
+        }
+      }
+
+      &.show-all {}
+    }
+  </style>
+</head>
+
+<body>
+  <h1>todos</h1>
+  <div>
+    <input type="checkbox" class="select-all">
+    <input type="text" id="todo-input">
+  </div>
+  <ul id="todo-list" class="show-all"></ul>
+  <div>
+    <span class="left-count">1 items left</span>
+    <div class="switch-category">
+      <label><input type="radio" value="all" name="selected" checked> All </label>
+      <label><input type="radio" value="active" name="selected"> Active </label>
+      <label><input type="radio" value="completed" name="selected"> Completed </label>
+    </div>
+    <button class="clear-completed">Clear Completed</button>
+  </div>
+</body>
+<script>
+  // #代表id，.代表class类
+  var todoInput = document.querySelector('#todo-input')
+  var todoList = document.querySelector('#todo-list')
+  var leftCount = document.querySelector('.left-count')
+  var clearCompleted = document.querySelector('.clear-completed')
+  var selectedAll = document.querySelector('.select-all')
+  var switchCategory = document.querySelector('.switch-category')
+
+  clearCompleted.addEventListener('click', () => {
+    // 找到所有被勾选的 li 并移除
+    const completedItems = todoList.querySelectorAll('li.completed');
+    completedItems.forEach(li => todoList.removeChild(li));
+    update3();
+  });
+
+  switchCategory.addEventListener('click', e => {
+    // 因为switchCategory内部可能还有文字或者空白的区域，如果没有这个判断，你点到文字的时候也会触发逻辑
+    if (e.target.matches('input[type="radio"]')) {
+      todoList.className = 'show-' + e.target.value
+    }
+  })
+  selectedAll.addEventListener('click', e => {
+    const items = document.querySelectorAll('#todo-list input[type="checkbox"]')
+    // 这里的 e.target.checked 代表全选按钮当前的状态（true 或 false）
+    // 如果全部选了e.target.checked就是true
+    // checked专门用于单选框和复选框的属性选中为true，false是未选中
+    const isAllChecked = e.target.checked
+    items.forEach(item => {
+      item.checked = isAllChecked
+      //  找到所有的任务行
+      const li = item.closest('li')
+      if (isAllChecked) {
+        li.classList.add('completed');
+        li.classList.remove('active')
+      } else {
+        li.classList.remove('completed');
+        li.classList.add('active');
+      }
+    })
+    update3()
+  })
+  update3()
+  todoInput.addEventListener('keyup', e => {
+    if (e.key == 'Enter') {
+      var todoText = e.target.value.trim()
+      if (todoText !== '') {
+        var li = document.createElement('li')
+        li.innerHTML = `
+          <input type="checkbox"/>
+          <span>${todoText}</span>
+          <input class="edit-box" type="text" value="${todoText}"/>
+          <button>x</button>
+        `
+        li.addEventListener('click', e => {
+          if (e.target.matches('button')) {
+            todoList.removeChild(li)
+            update3()
+          }
+          if (e.target.matches('input[type="checkbox"]')) {
+            if (e.target.checked) {
+              li.classList.add('completed')
+            } else {
+              li.classList.remove('completed')
+            }
+            update3()
+          }
+        })
+        li.addEventListener('dblclick', e => {
+          if (e.target.nodeName == 'SPAN') {
+            li.classList.add('editing')
+            li.querySelector('.edit-box').select()
+          }
+        })
+        li.addEventListener('keyup', e => {
+          if (e.target.matches('.edit-box') && e.key == 'Enter') {
+            li.querySelector('span').textContent = e.target.value.trim()
+            li.classList.remove('editing')
+          }
+        })
+        li.addEventListener('focusout', e => {
+          li.classList.remove('editing')
+        })
+        todoList.appendChild(li)
+        e.target.value = ''
+        update3()
+      }
+    }
+  })
+  function update3() {
+    // 1. 计算未完成数量 (只在 todoList 里面找)
+    const activeCount = todoList.querySelectorAll('input[type="checkbox"]:not(:checked)').length;
+    leftCount.textContent = `${activeCount} item(s) left`;
+
+    // 2. 显示/隐藏 "Clear Completed" 按钮 (只看列表里的勾选状态)
+    const hasCompleted = todoList.querySelectorAll('input[type="checkbox"]:checked').length > 0;
+    clearCompleted.style.display = hasCompleted ? 'inline-block' : 'none';
+
+    // 3. 自动同步“全选框”的状态
+    // 如果列表为空，全选框不应该被勾选
+    if (todoList.children.length === 0) {
+      selectedAll.checked = false;
+    } else {
+      selectedAll.checked = todoList.children.length === todoList.querySelectorAll('input[type="checkbox"]:checked').length;
+    }
+  }
+</script>
+
+</html>

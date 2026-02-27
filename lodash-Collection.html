@@ -393,13 +393,55 @@
   // 它的默值的话是false，
 </script>
 <script id="flatMapDepth">
+// 错误版本
   function flatMapDepth(collection, iteratee, depth) {
-    if(collection == null || typeof iteratee !== 'function') return [collection]
-    var reuslt = new Array(depth)
-    var it = 0
-    var isIn = false
-    for(var i = 0; i < result.length; i++) {
-
+    var result = []
+    if (collection == null || typeof iteratee !== 'function') return [collection]
+    if(depth == null) return result
+    var isSeen = false
+    var isSeenN = 0
+    for(var item of collection) {
+      const items = iteratee(item)
+      if(Array.isArray(items)) {
+        isSeen = true
+        isSeenN++
+        result.push(items)
+        if(isSeenN == depth) {
+          break
+        }
+        isSeen = false
+      }
     }
+    return result
+  }
+
+  function flatMapDepth(collection, iteratee, depth) {
+    depth = depth === undefined ? 1 : depth
+    const result = []
+    if(!Array.isArray(collection) || collection.length == 0) return result
+    for(let item of collection) {
+      result.push(iteratee(item))
+    }
+    while(depth > 0) {
+      let nextLevel = []
+      let hasArray = false
+      for(let item of result) {
+        if(Array.isArray(item)) {
+          nextLevel.push(...item)
+          hasArray = true
+        } else {
+          nextLevel.push(item)
+        }
+      }
+      result = nextLevel
+      depth--
+      if(!hasArray) break
+    }
+    return result
+  }
+</script>
+<script id="forEach">
+  function forEach(collection, iteratee) {
+    
   }
 </script>

@@ -109,6 +109,8 @@
       var todoText = e.target.value.trim()
       if (todoText !== '') {
         var li = document.createElement('li')
+        // 模板字符串，支持换行，变量插值
+        // innerHTML它会把指定的HTML代码片段直接变成真正的网页元素
         li.innerHTML = `
           <input type="checkbox"/>
           <span>${todoText}</span>
@@ -153,11 +155,13 @@
   function update3() {
     // 1. 计算未完成数量 (只在 todoList 里面找)
     const activeCount = todoList.querySelectorAll('input[type="checkbox"]:not(:checked)').length;
+    // 找到那些没有被勾选的复选框
     leftCount.textContent = `${activeCount} item(s) left`;
 
     // 2. 显示/隐藏 "Clear Completed" 按钮 (只看列表里的勾选状态)
     const hasCompleted = todoList.querySelectorAll('input[type="checkbox"]:checked').length > 0;
     clearCompleted.style.display = hasCompleted ? 'inline-block' : 'none';
+    // inline-block这里的意思就是显示按钮
 
     // 3. 自动同步“全选框”的状态
     // 如果列表为空，全选框不应该被勾选

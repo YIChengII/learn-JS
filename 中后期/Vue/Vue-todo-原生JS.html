@@ -41,6 +41,7 @@
 
       &.show-all {}
     }
+    
   </style>
 </head>
 
@@ -133,7 +134,10 @@
         })
         li.addEventListener('dblclick', e => {
           if (e.target.nodeName == 'SPAN') {
+            // 给列表项戴上一顶叫"editing"的帽子
             li.classList.add('editing')
+            // select()是全选高亮
+            // 找到那个输入框，并把里面的文字全部选中，等候用户修改
             li.querySelector('.edit-box').select()
           }
         })

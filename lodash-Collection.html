@@ -393,20 +393,20 @@
   // 它的默值的话是false，
 </script>
 <script id="flatMapDepth">
-// 错误版本
+  // 错误版本
   function flatMapDepth(collection, iteratee, depth) {
     var result = []
     if (collection == null || typeof iteratee !== 'function') return [collection]
-    if(depth == null) return result
+    if (depth == null) return result
     var isSeen = false
     var isSeenN = 0
-    for(var item of collection) {
+    for (var item of collection) {
       const items = iteratee(item)
-      if(Array.isArray(items)) {
+      if (Array.isArray(items)) {
         isSeen = true
         isSeenN++
         result.push(items)
-        if(isSeenN == depth) {
+        if (isSeenN == depth) {
           break
         }
         isSeen = false
@@ -418,15 +418,15 @@
   function flatMapDepth(collection, iteratee, depth) {
     depth = depth === undefined ? 1 : depth
     const result = []
-    if(!Array.isArray(collection) || collection.length == 0) return result
-    for(let item of collection) {
+    if (!Array.isArray(collection) || collection.length == 0) return result
+    for (let item of collection) {
       result.push(iteratee(item))
     }
-    while(depth > 0) {
+    while (depth > 0) {
       let nextLevel = []
       let hasArray = false
-      for(let item of result) {
-        if(Array.isArray(item)) {
+      for (let item of result) {
+        if (Array.isArray(item)) {
           nextLevel.push(...item)
           hasArray = true
         } else {
@@ -435,13 +435,40 @@
       }
       result = nextLevel
       depth--
-      if(!hasArray) break
+      if (!hasArray) break
     }
     return result
   }
 </script>
 <script id="forEach">
   function forEach(collection, iteratee) {
+    if (collection == null) return []
+    if (typeof iteratee !== 'function') return collection
+    const iterable = Array.isArray(collection) ? collection : Object.entries(collection || {})
+    const length = iterable.length
+    if(length == 0) {
+      return []
+    }
+    if(Array.isArray(collection)) {
+      for(var i = 0; i < length; i++) {
+        if(iteratee(collection[i], i, collection) === false) {
+          break
+        }
+      }
+    } else {
+      var keys = Object.keys(collection)
+      for(var i = 0; i < keys.length; i++) {
+        var key = keys[i]
+        if (iteratee(collection[key], key, collection) === false) {
+          break
+        }
+      }
+    }
+    return collection
+  }
+</script>
+<script id="groupBy">
+  function groupBy(collection, iteratee) {
     
   }
 </script>
